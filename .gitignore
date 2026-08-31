@@ -1,0 +1,6 @@
+# Dataset kompetisi -- milik penyelenggara, jangan didistribusikan ulang lewat repo
+data/
+
+# Cache fitur & log eksperimen (besar / bisa dibangun ulang)
+exp/cache/
+*.log
