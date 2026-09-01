@@ -144,15 +144,32 @@ MSM={"M_001":["skill_overall_avg"],"M_002":["skill_python"],"M_003":["skill_sql"
  "M_017":["skill_business","skill_independence"]}
 CAC={mid:[f"career_{c}" for c,ms in CAREER_AFF.items() if mid in ms] for mid in M}
 
+# [v27] prasyarat berbasis MIN, dibaca dari kolom prerequisite_level katalog
+REQ={"M_001":[],"M_002":[],"M_003":[],"M_004":["skill_python"],"M_005":[],"M_006":[],
+     "M_007":["skill_python","skill_stat"],"M_008":["skill_sql"],
+     "M_009":["skill_eda","skill_stat"],"M_010":["skill_ml_build","skill_dl"],
+     "M_011":["skill_ml_build"],"M_012":["skill_dl","skill_genai"],"M_013":[],
+     "M_014":[],"M_015":[],"M_016":["skill_ml_build","skill_python","skill_independence"],
+     "M_017":[]}
+_sk=assess_df.set_index("user_id")[SKILL_KEYS]
+_pr={"user_id":assess_df.user_id.tolist()}
+_a=_sk.to_numpy(); _idx={k:i for i,k in enumerate(SKILL_KEYS)}
+for mid in M:
+    r=REQ[mid]
+    _pr[f"pmin_{mid}"]=(_a[:,[_idx[x] for x in r]].min(axis=1) if r else np.full(len(_a),5.0))
+_pr["all_skill_low"]=(_a.max(axis=1)<=1).astype(int)
+_pr["skill_max"]=_a.max(axis=1); _pr["skill_min"]=_a.min(axis=1)
+prereq_df=pd.DataFrame(_pr)
+
 uf=(assess_df.merge(ca,on="user_id",how="left").merge(mentions_df,on="user_id",how="left")
-    .merge(sim_df,on="user_id",how="left").merge(ic_df,on="user_id",how="left"))
+    .merge(sim_df,on="user_id",how="left").merge(ic_df,on="user_id",how="left").merge(prereq_df,on="user_id",how="left"))
 for c in ["chat_count"]+[f"mention_{m}" for m in M]+[f"wmention_{m}" for m in M]: uf[c]=uf[c].fillna(0)
 uf["chat_avg_len"]=uf.chat_avg_len.fillna(0); uf["chat_span_days"]=uf.chat_span_days.fillna(0)
 uf["days_since_last_chat"]=uf.days_since_last_chat.fillna(uf.days_since_last_chat.max())
 uf["has_chat"]=(uf.chat_count>0).astype(int)
 tc=[c for c in uf.columns if c.startswith(("tfidfchar_","tfidfword_"))]; uf[tc]=uf[tc].fillna(0)
 icc=[c for c in uf.columns if c.startswith(("intent_","career_"))]; uf[icc]=uf[icc].fillna(0)
-CLF_COLS=[c for c in uf.columns if c not in ("user_id","chat_first","chat_last")]
+CLF_COLS=[c for c in uf.columns if c not in ("user_id","chat_first","chat_last") and not c.startswith("pmin_")]
 
 def melt_pre(dw,pre,new):
     cols=[c for c in dw.columns if c.startswith(pre+"M_")]
@@ -161,13 +178,14 @@ def melt_pre(dw,pre,new):
 
 def build_long(uids, wide_target=None):
     base=uf[uf.user_id.isin(uids)].sort_values("user_id").reset_index(drop=True)
-    wmc=[c for c in base.columns if c.startswith(("mention_","wmention_","tfidfchar_","tfidfword_"))]
+    wmc=[c for c in base.columns if c.startswith(("mention_","wmention_","tfidfchar_","tfidfword_","pmin_"))]
     bs=base.drop(columns=wmc).copy()
     mm=modules[modules.module_id.isin(M)][["module_id","level_ord"]].rename(columns={"level_ord":"module_level_ord"}).copy()
     bs["_k"]=1; mm["_k"]=1; ld=bs.merge(mm,on="_k").drop(columns="_k")
     for pre,nm in [("mention_","module_mentions"),("wmention_","module_wmentions"),
                    ("tfidfchar_","module_tfidf_char_sim"),("tfidfword_","module_tfidf_word_sim")]:
         ld=ld.merge(melt_pre(base,pre,nm),on=["user_id","module_id"],how="left")
+    ld=ld.merge(melt_pre(base,"pmin_","prereq_min"),on=["user_id","module_id"],how="left")
     ld["career_module_affinity"]=0.0
     for mid,af2 in CAC.items():
         av=[c for c in af2 if c in ld.columns]
