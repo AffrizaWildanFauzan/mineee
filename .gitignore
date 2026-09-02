@@ -1,5 +1,6 @@
 # Dataset kompetisi -- milik penyelenggara, jangan didistribusikan ulang lewat repo
 data/
+official/
 
 # Cache fitur & log eksperimen (besar / bisa dibangun ulang)
 exp/cache/
