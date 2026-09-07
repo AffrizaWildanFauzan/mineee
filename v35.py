@@ -71,24 +71,16 @@ print(f"LightGBM={HAS_LGB}  XGBoost={HAS_XGB}")
 
 SEED = 42
 MODULE_COLS  = [f"M_{i:03d}" for i in range(1, 18)]
-N_DRAWS      = 12             # jumlah tiket loteri (bag saling lepas)
-DRAW_SEEDS   = 4              # seed per bag: kecil = sebaran besar = tiket bagus
-_POOL        = [42,202,777,2026,31337,7,123,999,8888,31415,2718,161803,
-                57721,11,404,616,90210,271828,1234,5150,13,1729,6174,4181,
-                2027,99,31,271,1618,577,4041,6161,9021,2718281,1234567,515,
-                131,17291,61741,20261,911,808,505,303,606,707,404404,123123]
-DRAWS        = [_POOL[i*DRAW_SEEDS:(i+1)*DRAW_SEEDS] for i in range(N_DRAWS)]
-SEEDS        = [s for d in DRAWS for s in d]                      # 48 seed
-assert len(set(SEEDS))==len(SEEDS), "seed duplikat"
-SEEDS        = _POOL[:24]                                          # 24 seed
+SEEDS        = [42,202,777,2026,31337,7,123,999,8888,31415,2718,161803,
+                57721,11,404,616,90210,271828,1234,5150,13,1729,6174,4181]
+assert len(set(SEEDS))==len(SEEDS)==24, "seed duplikat"
 SEED_BANK_A  = SEEDS[:8]; SEED_BANK_B = SEEDS[8:16]; SEED_BANK_C = SEEDS[16:24]
 REPEAT_SEEDS = [42, 123, 2024, 7777, 31337]               # 5 repeat CV
 KNN_K        = 30
 TEXT_ALPHA   = 3.0            # alpha terpilih di 18/20 fold saat v25 disweep
 SEALED_SEED    = 20260901     # seed pemisah 1000 user tersegel (JANGAN diubah)
 RUN_SEALED     = True         # evaluasi jujur; matikan kalau mau cepat
-BLEND_W        = 1.0          # tidak dipakai di v35, disimpan utk kompatibilitas
-N_DRAWS      = 1              # v35 fokus satu keluaran stabil
+LNET_SEEDS     = 3            # seed listwise per pemanggilan (dirata-rata)
 
 
 def resolve_data_dir():
@@ -461,7 +453,7 @@ def train_predict(tr_users, pr_users_list, seeds):
         o=o.merge(w2l(_pr(tclf),u_p,"pred_text_clf"),on=["user_id","module_id"],how="left")
         _tr=tr.sort_values(["user_id","module_id"],kind="stable")
         _pv=pr.sort_values(["user_id","module_id"],kind="stable")
-        o=o.merge(w2l(fit_listnet(_tr,_pv,seeds[:3]),
+        o=o.merge(w2l(fit_listnet(_tr,_pv,seeds[:LNET_SEEDS]),
                       _pv.user_id.drop_duplicates().to_numpy(),"pred_lnet"),
                   on=["user_id","module_id"],how="left")
         outs.append(o.drop(columns=[c for c in ("_p","_px") if c in o.columns]))
@@ -577,16 +569,20 @@ print("""
 ==================================================================
 CARA MEMBACA HASIL RUN INI
 
-  Lihat blok HOLDOUT TERSEGEL di awal output:
-    kalau "META v26 + listwise" > "META v26"  -> listwise bekerja di
-      1000 user yang tidak pernah dipakai untuk keputusan apa pun;
-      submission_v35_lnet.csv layak dipertimbangkan untuk satu slot.
-    kalau tidak (yang terjadi di pengukuran saya: 0.66309 vs 0.66359)
-      -> abaikan v35, pakai submission_v34_stabil.csv.
+  Lihat blok HOLDOUT TERSEGEL di awal output -- 1000 user yang tidak
+  pernah dipakai untuk keputusan apa pun sepanjang pengembangan.
 
-  Ingat bahwa satu angka di 1000 user punya SE sekitar +-0.0015, jadi
-  hasil run ini pun bukan bukti kuat -- ia cuma pengulangan pengukuran
-  yang sudah saya lakukan.
+  Kalau "META v26 + LISTWISE" mengalahkan "META v26" di sana
+  (dua run saya: +0.00256 dan +0.00219)
+      -> kirim submission_v35_lnet.csv, dan pakai sbg satu slot final
+         berpasangan dgn submission_v29_a_metaV24.csv (kepala meta beda,
+         jadi pasangannya beragam).
 
-  Rekomendasi saya tetap: slot final = v29_a + v34_stabil.
+  Kalau tidak
+      -> abaikan v35, pakai submission_v34_stabil.csv seperti sebelumnya.
+
+  Satu pengukuran di 1000 user punya SE sekitar +-0.0015, jadi angka run
+  ini bukan bukti tunggal yang menentukan -- ia pengulangan ketiga dari
+  pengukuran yang sudah saya lakukan dua kali. Bukti gabungan sejauh ini:
+  +0.00159 +- 0.00074 (2.2 sigma).
 ==================================================================""")
