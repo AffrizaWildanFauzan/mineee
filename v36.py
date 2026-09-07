@@ -528,7 +528,7 @@ if RUN_SEALED:
 print(f"\nOOF penuh ({len(REPEAT_SEEDS)} repeat x 5 fold)...")
 reps=run_oof(np.array(sorted(train_wide.user_id)), REPEAT_SEEDS, [SEED])
 print("\nNDCG@5 tiap sinyal sendirian (rata-rata repeat):")
-for c in META:
+for c in META_2:
     print(f"  {c:15s}: {np.mean([ndcg_of(r,c) for r in reps]):.5f}")
 
 def loo(cols):
@@ -541,8 +541,9 @@ def loo(cols):
         e.append(ndcg_of(mva,"s")); l.append(ndcg_of(mva,"s",False))
     return np.mean(e),np.mean(l)
 if len(reps)>1:
-    print("\nCV (leave-one-repeat-out, sebanding dgn angka v21-v30):")
-    for cols,nm in [(META_v24,"META v24"),(META,"META v26 (dipakai v31)")]:
+    print("\nCV (leave-one-repeat-out, sebanding dgn angka v21-v35):")
+    for cols,nm in [(META_v24,"META v24"),(META,"META v26"),(META_LN,"+ listnet"),
+                    (META_LM,"+ lambdarank"),(META_2,"+ keduanya")]:
         e,l=loo(cols); print(f"  {nm}: exp={e:.5f}  linear={l:.5f}")
 
 meta_all=pd.concat(reps,ignore_index=True)
@@ -587,20 +588,19 @@ print("""
 ==================================================================
 CARA MEMBACA HASIL RUN INI
 
-  Lihat blok HOLDOUT TERSEGEL di awal output -- 1000 user yang tidak
-  pernah dipakai untuk keputusan apa pun sepanjang pengembangan.
+  Blok HOLDOUT TERSEGEL di awal output sudah menilai keempat varian di
+  1000 user yang tidak pernah dipakai untuk keputusan apa pun, lalu
+  menyebut PEMENANG-nya. Kirim file yang disebut di sana.
 
-  Kalau "META v26 + LISTWISE" mengalahkan "META v26" di sana
-  (dua run saya: +0.00256 dan +0.00219)
-      -> kirim submission_v35_lnet.csv, dan pakai sbg satu slot final
-         berpasangan dgn submission_v29_a_metaV24.csv (kepala meta beda,
-         jadi pasangannya beragam).
+  Untuk 2 slot final:
+    slot 1 -> submission_v29_a_metaV24.csv   (META v24, kepala meta beda)
+    slot 2 -> file pemenang dari blok tersegel
+  Pasangan itu paling beragam, dan Kaggle mengambil yang terbaik dari
+  dua yang dipilih.
 
-  Kalau tidak
-      -> abaikan v35, pakai submission_v34_stabil.csv seperti sebelumnya.
-
-  Satu pengukuran di 1000 user punya SE sekitar +-0.0015, jadi angka run
-  ini bukan bukti tunggal yang menentukan -- ia pengulangan ketiga dari
-  pengukuran yang sudah saya lakukan dua kali. Bukti gabungan sejauh ini:
-  +0.00159 +- 0.00074 (2.2 sigma).
+  CATATAN JUJUR: satu pengukuran di 1000 user punya SE sekitar +-0.0015,
+  jadi selisih di bawah itu jangan dianggap pasti. Dua protokol uji saya
+  juga masih berbeda hasilnya untuk listnet (+0.0022..+0.0030 di dalam
+  pipeline vs -0.0005 lewat penggabungan OOF lintas-run); penyebabnya
+  belum saya temukan. lambdarank positif di kedua protokol.
 ==================================================================""")
