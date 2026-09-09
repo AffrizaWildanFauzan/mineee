@@ -561,6 +561,41 @@ kolom `target`. Hasilnya NDCG@5 = 1.00000. Itu bukan "encoder sempurna", itu
 "memberi kunci jawaban" — batas atas yang tidak bermakna. Dibuang; e80 yang
 dirancang benar (substitusi dengan representasi yang benar-benar dicapai).
 
+### REPLIKASI (run v38 kedua, 10 Sep) — kesimpulan sama persis
+v38 dijalankan ulang dgn MiniLM. Dua run independen, jawaban identik:
+```
+                     run 1      run 2
+pred_emb_sim        0.46716    0.46719
+pred_emb_clf        0.60545    0.60539
+pred_emb            0.62167    0.62166
+bobot Ridge emb_sim   0.000      0.000
+bobot Ridge emb       0.000      0.000
+tersegel +embedding +0.00045   +0.00047
+tersegel +keduanya  +0.00193   +0.00186   (selalu di BAWAH +listnet +0.00297)
+```
+
+### LANTAI REPRODUKSIBILITAS — angka baru yang berguna
+Kode yang SAMA dijalankan dua kali menghasilkan file yang BERBEDA:
+```
+file       maxdiff    urutan top-5 sama   himpunan sama
+lnet      4.06e-08         100.0%            100.0%   <- tidak pakai embedding
+v26       3.07e-08         100.0%            100.0%   <- tidak pakai embedding
+dua       6.57e-04          99.3%             99.9%   <- pakai embedding
+emb       6.97e-04          99.6%             99.9%   <- pakai embedding
+```
+Penyebab: encode torch tidak deterministik antar-run (reduksi multi-thread).
+Kepala yang tidak memakai embedding tetap deterministik sempurna.
+Artinya: **file dari dua run kode yang sama bisa lolos cek "file baru"**
+padahal bedanya cuma 7 user dari 1000. Nilainya sbg slot ke-2:
+E[max] +0.00025 — nyata tapi kalah dari rencana sekarang (+0.00056).
+
+Keberagaman file run-2 thd calon pasangan:
+```
+v38_dua vs v29_a    kemiripan 0.882  E[max] +0.00051
+v38_emb vs v29_a    kemiripan 0.907  E[max] +0.00046
+v29_a  + v36_lnet   kemiripan 0.860  E[max] +0.00056  <- masih terbaik
+```
+
 ### Batasan yang jujur
 `huggingface.co` diblokir kebijakan jaringan di sandbox, jadi IndoBERTweet
 TIDAK diuji langsung. Yang diuji: 7 representasi lain + MiniLM nyata dari
