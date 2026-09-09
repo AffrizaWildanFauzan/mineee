@@ -137,7 +137,7 @@ file identik untuk 96.5% user.
 | model teks level-PESAN (recency-weighted) | −0.0084 | RUGI |
 | perbaikan MODULE_KEYWORDS dari katalog | −0.0009 | RUGI |
 | buang 135 keyword mati (68% dari total) | 0.0000 | inert |
-| sweep hyperparameter LGBM | +0.0005 ± 0.0006 | noise |
+| sweep hyperparameter LGBM | +0.0005 ± 0.0006 | noise — lihat §9c |
 | meta-ranker di-blend dgn Ridge | +0.0005 ± 0.0005 | noise |
 | prasyarat berbasis MIN | +0.0006 ± 0.0006 | noise |
 | 3 objective teks baru (bin/rank2/rank3) | tersegel −0.00025 | RUGI |
@@ -447,6 +447,72 @@ tapi bagging juga menaikkan kualitas (draw 4-seed rata 0.6598 vs 12/24 seed
 `P(top-5)` sangat sensitif thd **jumlah tim yang bersaing di pita 0.660-0.662**
 (0.797 utk 8 tim, 0.572 utk 15 tim). Itu satu-satunya angka yang belum
 diketahui dan bisa dibaca langsung dari papan peringkat.
+
+---
+
+## 9c. OPTUNA / TUNING HYPERPARAMETER — SUDAH DIUJI, JANGAN DIJALANKAN (e75–e77)
+
+Pertanyaan: kalau selisih skor tipis, apakah lebih baik Optuna + GPU saja?
+Diuji tiga tahap. Jawabannya **tidak** — tapi alasannya bukan yang diduga.
+
+### e75 — apakah tuning punya sinyal sama sekali? YA
+30 konfigurasi acak (rentang lebar), latih di 2000 user, nilai di DUA set
+evaluasi terpisah 1000 user:
+```
+sd skor lintas konfigurasi : sd_A 0.00749   sd_B 0.00636
+korelasi A vs B            : Pearson +0.952   Spearman +0.716
+pilih terbaik di A -> di B : +0.00441 di atas rata-rata
+```
+Jadi tuning BUKAN penambangan noise. Ada sinyal nyata.
+
+### e76 — tapi apakah ada ruang DI ATAS konfigurasi kita? TIDAK, lewat holdout
+25 konfigurasi dari wilayah masuk akal saja (bukan ekstrem), termasuk baseline:
+```
+BASELINE v24        : peringkat 10/25   (jadi ada yg terlihat lebih baik)
+korelasi A vs B     : Pearson +0.924   Spearman +0.598
+pilih terbaik di A  -> di B = 0.65879  vs baseline di B = 0.65985
+                              SELISIH NYATA = -0.00106  (LEBIH BURUK)
+bias seleksi terlihat di A  = +0.00268
+```
+Begitu masuk wilayah bagus, derau evaluasi (sigma ~0.0017 di 1000 user)
+mengalahkan sebaran kualitas sejati. Argmax memilih konfigurasi yang beruntung.
+
+### e77 — PENYEBAB SEBENARNYA: seed-bagging sudah memakan keuntungannya
+Baseline vs konfigurasi terbaik e76, dibagi 1 / 4 / 8 seed, diuji di 2000 user:
+```
+konfigurasi        1 seed    4 seed    8 seed
+BASELINE v24      0.66190   0.66227   0.66276
+TERBAIK (cfg23)   0.66365   0.66235   0.66297
+selisih          +0.00175  +0.00008  +0.00021
+```
+**Keunggulan +0.00175 di 1 seed RUNTUH jadi +0.0002 di 8 seed** (SE ±0.0011).
+
+Mekanismenya: num_leaves/subsample/colsample sebagian besar mengatur
+tukar-tambah bias-varians satu ensemble. Rata-rata banyak seed sudah
+menghilangkan komponen varians itu — jadi konfigurasi "lebih baik" sebagian
+besar hanyalah konfigurasi yang variansnya kebetulan lebih rendah, dan
+bagging memberi itu GRATIS. Pipeline kita sudah memakai **24 seed** plus
+meta-Ridge 8 sinyal yang menekan selisih model dasar lebih jauh lagi.
+Tuning dan bagging itu **substitusi, bukan pelengkap**.
+
+### Bias seleksi kalau tetap dipaksakan
+`E[max dari N estimasi berderau] ~ mu + sigma*sqrt(2 ln N)` — kenaikan SEMU:
+```
+trial   sigma=0.0015      sigma=0.0007      sigma=0.0004
+        (1x holdout)      (5rep x 5fold)    (20rep x 5fold)
+   50      +0.00420          +0.00196          +0.00112
+  300      +0.00507          +0.00236          +0.00135
+ 1000      +0.00558          +0.00260          +0.00149
+```
+Bandingkan: seluruh jarak kita ke peringkat 2 hanya **0.00075**. Optuna 300
+trial akan melaporkan kenaikan CV +0.005 yang seluruhnya fiktif — persis pola
+yang sudah menjatuhkan v31/v33/v36.
+
+### Soal GPU
+Tidak menolong. Dataset ini kecil (68.000 baris x 45 fitur). GPU LightGBM/XGBoost
+baru menang di jutaan baris; di ukuran segini overhead kernel sering membuatnya
+LEBIH LAMBAT dari CPU. GPU juga tidak mengubah akurasi — hanya mempercepat
+penambangan noise.
 
 ---
 
