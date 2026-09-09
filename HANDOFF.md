@@ -305,7 +305,61 @@ Jangan diulang.
 
 ## 8. Posisi saat ini (per 8 September 2026)
 
-### Papan publik
+### Papan publik — DIPERBARUI 11 Sep (e81)
+```
+1. kc mw ke ipb        0.96619  n=23   <- ANOMALI (+101 SE)
+2. psi-1               0.70566  n=38   <- ANOMALI BARU (+14.8 SE)
+3. Dikeri Leon         0.66345  n=49   +0.75 SE
+4. IndomaretLabtekV    0.66219  n=55   +0.34 SE
+5. Sirloin Wagyu A5    0.66211  n=37   +0.31 SE  <- ambang finalis
+6. Datadataan          0.66193  n=51   +0.25 SE
+7. Nice See Go Range   0.66118  n=59   <- KITA
+```
+**PERUBAHAN PENTING**: dua skor anomali menempati slot finalis 1-2, jadi
+tersisa TIGA slot untuk tim normal. Ambangnya bukan lagi "top-5 dari semua"
+melainkan **top-3 di antara tim normal**.
+
+P(lolos finalis) dgn pasangan v29_a + v36_lnet:
+```
+skor publik = kualitas sejati      : 0.38 - 0.49
+kualitas semua tim dianggap sama   : 0.54 - 0.69
+```
+Turun dari 0.68 sebelumnya — bukan karena model memburuk, tapi karena dua
+slot dimakan anomali dan tim lain naik.
+
+Sensitivitas pilihan slot ke-2 (skor publik = kualitas sejati, +3 tim lain):
+```
+satu file / dua file kembar : P(finalis) 0.302
+v29_a + v29_b               : P(finalis) 0.350
+v29_a + v38_dua             : P(finalis) 0.374
+v29_a + v36_lnet  <- rencana: P(finalis) 0.407
+```
+Mencentang pasangan yang benar bernilai **+10 poin persentase**, gratis.
+
+### STATUS SLOT FINAL (per 11 Sep): BARU SATU YANG DICENTANG
+Di tab Submissions hanya `submission_v29_a_metaV24.csv` yang tercentang.
+`submission_v36_lnet.csv` MASIH KOSONG. Isi otomatis Kaggle kebetulan akan
+memilih v35/v36_lnet (skor publik tertinggi berikutnya, 0.66113) — tapi itu
+kebetulan, bukan jaminan. **Centang manual.**
+
+### PENOMORAN BENTROK ANTAR ANGGOTA TIM
+Rekan tim mengirim versi bernomor sendiri yang BUKAN kode dari sesi ini:
+`v39_main` (AbiyyuRaihanPW, 0.65981), `v41_cat_kode` (0.65803),
+`v40_draw1` (0.65891), plus `v38_h4sig` dan `v38_spread_01` di repo.
+Jangan asumsikan nama file vX cocok dgn vX.py di repo ini — SELALU diff.
+
+### 8 SUBMISSION TERAKHIR: NOL yang melampaui rekor
+```
+v39_main 0.65981 | v41_cat 0.65803 | v40_draw1 0.65891 | v37_v24lam 0.66057
+v36_lnet 0.66113 | v36_lam 0.65862 | v36_dua  0.66004 | v35_lnet   0.66113
+```
+Rekor 0.66118 dibuat 7 hari lalu (v29_a), 22 percobaan kemudian belum
+tersentuh. Keluarga inti 21 submission: rata **0.65996**, sd **0.00091**;
+rekor = +1.35 sd (undian bagus, bukan model lebih baik).
+Kita punya 59 entri — TERBANYAK di antara semua tim. Menambah percobaan
+tidak menaikkan skor.
+
+### Papan publik LAMA (8 Sep, utk pembanding)
 ```
 1. kc mw ke ipb        0.96609   <- ANOMALI, lihat catatan
 2. Datadataan          0.66193
