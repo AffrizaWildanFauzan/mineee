@@ -116,6 +116,7 @@ ke 5000 user = transduktif (hanya fitur test), sah.
 | v36_lnet | **FILE IDENTIK dgn v35_lnet** | 0.66113 |
 | v36_dua | + listnet + lambdarank | 0.66004 |
 | v36_lam | + lambdarank | 0.65862 |
+| v38_lnet | **FILE IDENTIK dgn v35_lnet/v36_lnet** — TIDAK dikirim | (0.66113) |
 
 **Statistik kunci**: 16 submission dari keluarga model yang sama →
 **rata-rata 0.66007, sd 0.00074**. Rekor 0.66118 = **+1.5 sd** (undian bagus,
@@ -149,11 +150,33 @@ file identik untuk 96.5% user.
 | blending z-score per-user | dev +0.00067 → tersegel −0.00021 | tidak lolos |
 | kalibrasi offset/skala/isotonik per-modul | −0.0006..−0.0052 | RUGI |
 | campuran META v24+v26 50/50 | LB 0.65989 (netral) | nol |
-| **listwise ListNet** | dev +0.00137, tersegel +0.0022..+0.0030, **LB −0.00014** | lihat §7 |
-| **listwise LambdaRank** | dev +0.00131, LB 0.65862 | lihat §7 |
+| **listwise ListNet** | dev +0.00137, tersegel +0.0022..+0.0030, LB 0.66113 (+1.4 sd) | **POSITIF** — lihat §7 no.7 |
+| **listwise LambdaRank** | dev +0.00131, LB 0.65862 | RUGI |
+| **encoder kalimat pretrained** (MiniLM multibahasa) | tersegel +0.00045; Ridge beri bobot **0.000** | RUGI — lihat §5b |
 | listwise fitur teks SVD (hybrid) | +0.00022 (1.5σ) | lemah |
 | listwise target one-hot rank-1 | +0.00078 | kalah |
 | loteri bag seed kecil | sd 0.00096 di 310 user | undian, bukan model |
+
+### 5b. Encoder kalimat pretrained (v38) — DITUTUP, jangan diulang
+Diuji penuh di Kaggle dgn `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
+(mean-pooling, 384 dim, 5000 user + 17 katalog modul ter-encode). Tiga sinyal:
+
+| sinyal | NDCG@5 sendirian | bobot meta-Ridge |
+|---|---|---|
+| `pred_emb_sim` cosine(user, katalog modul), tanpa training | **0.46716** | **0.000** |
+| `pred_emb_clf` LogReg embedding → modul dominan | 0.60545 | 0.067 |
+| `pred_emb` Ridge embedding → 17 relevansi | 0.62167 | **0.000** |
+
+Adu langsung, TF-IDF MENANG di kedua kepala:
+`pred_text` 0.63784 > `pred_emb` 0.62167 ; `pred_text_clf` 0.61574 > `pred_emb_clf` 0.60545.
+
+Holdout tersegel: `+ embedding` +0.00045 (SE ±0.0015 → nol).
+`+ keduanya` 0.66403 justru LEBIH BURUK dari `+ listnet` saja 0.66507 (−0.00104).
+
+`pred_emb_sim` 0.46716 nyaris menyentuh lantai "tebak modul terpopuler" 0.39045.
+Hipotesis "kemiripan makna menangkap user yang memparafrase" **terbukti salah**.
+Ini konfirmasi langsung atas ramalan plafon e65–e67. **Jalur "ganti/tambah
+encoder teks" resmi tertutup** — masalahnya bukan pemahaman bahasa.
 
 ### Yang TIDAK tersedia di lingkungan
 `torch`, `catboost`, `tensorflow` tidak terpasang di sandbox pengembangan
@@ -228,15 +251,34 @@ Jangan diulang.
    dengan pengembalian yang menggelembungkan varians. Yang benar dari 4 draw
    nyata: sd 0.00096, P ≈ 0.09 per draw.
 
-5. **Listwise: 4 run tersegel positif (+0.0022..+0.0030), papan publik nol.**
-   Penyebab paling mungkin: **holdout tersegel sudah dibaca belasan kali** untuk
-   mengambil keputusan, sehingga berhenti jadi arbiter bersih dan berubah jadi
-   set validasi kedua yang dioptimasi. Overfit ada pada PROSES SELEKSI, bukan
-   pada model. **Perlakukan angka tersegel sekarang dengan skeptis.**
+5. **~~Listwise: tersegel positif, papan publik nol~~ — KLAIM INI SALAH,
+   sudah diralat (v38).** Angka "LB −0.00014" itu didapat dgn menggabungkan
+   ListNet dan LambdaRank ke dalam satu kantong "listwise". Yang menyeret
+   rata-rata turun adalah LambdaRank (0.65862), bukan ListNet. Dipisah:
+
+   | file | skor |
+   |---|---|
+   | v35_lnet (ListNet murni) | **0.66113** = +1.4 sd di atas rata-rata famili |
+   | v36_dua (ListNet + LambdaRank) | 0.66004 |
+   | v36_lam (LambdaRank saja) | 0.65862 |
+
+   Jadi holdout tersegel (+0.0030) dan papan publik (+1.4 sd) **SEPAKAT** soal
+   ListNet — bukan bertentangan. Baru satu pengukuran independen, jadi belum
+   bukti, tapi arahnya konsisten. Yang tetap benar: LambdaRank rugi, dan
+   holdout tersegel tetap perlu diperlakukan skeptis karena sudah dibaca
+   belasan kali untuk mengambil keputusan.
 
 6. **v36_lnet ternyata file identik dengan v35_lnet** (max selisih 4.4e-16).
    Satu slot submission terbuang. Selalu bandingkan file baru dengan yang lama
    sebelum menyuruh submit.
+
+7. **Terulang di v38**: `v38_lnet` juga identik bit-per-bit dgn v35/v36_lnet
+   (4.4e-16), dan blok holdout tersegel MENYURUH mengirimnya sbg "pemenang".
+   Blok tersegel cuma membandingkan NDCG — ia TIDAK tahu apakah filenya baru.
+   **Aturan wajib: diff CSV baru terhadap semua CSV lama SEBELUM menyuruh
+   submit**, berapa pun bagusnya angka tersegel. Sebab strukturalnya: sinyal
+   baru yang cuma menambah kolom tidak mengubah kepala meta yang tidak
+   memakainya, jadi varian "lama" pasti terproduksi ulang persis.
 
 ---
 
