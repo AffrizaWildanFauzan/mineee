@@ -357,6 +357,99 @@ tidak berkorelasi. **Rekomendasi: `submission_v29_a_metaV24.csv` +
 3. **Jangan tambah versi model baru.** v34/v35/v36 semuanya mengklaim
    +0.001..+0.003 di evaluasi sisi-train dan memberi **nol** di papan publik.
 
+## 9b. TEMUAN e68–e74 (10 Sep): lombanya sudah jadi UNDIAN
+
+### Derau papan peringkat (e68, dari OOF 4000 user)
+```
+sd NDCG@5 antar-user (satu model)      0.1773
+sd SELISIH per-user (dua model kita)   0.0301   korelasi 0.9856
+SE selisih dua model, papan PUBLIK     0.00171
+SE selisih dua model, papan PRIVAT     0.00115
+```
+Selisih nyata antar tim di papan publik, diukur dalam SE:
+
+| tim | skor | selisih thd kita |
+|---|---|---|
+| Datadataan | 0.66193 | **+0.44 SE** |
+| IndomaretLabtekV | 0.66173 | +0.32 SE |
+| Sirloin | 0.66145 | +0.16 SE |
+| Dikeri Leon (ambang top-5) | 0.66134 | **+0.09 SE** |
+| KITA | 0.66118 | 0 |
+
+**Peringkat 2 sampai 6 berada dalam setengah SE.** Urutannya tidak bisa
+dibedakan dari lemparan koin. Kita secara statistik SUDAH seri untuk top-5.
+(0.00171 itu batas BAWAH: dihitung dari dua model kita sendiri yang
+berkorelasi 0.986; model tim lain kurang berkorelasi → SE lebih besar lagi.)
+
+### Kurva belajar (e70) — kita BUKAN di plafon Bayes
+```
+n_train   250    500   1000   1500   2000   2500   3000
+NDCG@5  .6305  .6461  .6569  .6603  .6631  .6665  .6678
+delta          +.0156 +.0108 +.0035 +.0028 +.0033 +.0013
+```
+Masih naik di 3000. Hambatannya **jumlah data**, bukan kelas model — dan
+data tidak bisa ditambah. Plafon Bayes dari user ber-input identik (e69)
+tidak bisa dipakai: cuma 11 grup / 23 user, dan oracle di grup berisi 2
+user bias optimis.
+
+### Kalibrasi keberagaman (e71) — R2 = 0.983
+```
+sd_selisih_per_user  ~  0.0164 + 0.1462 x (1 - kemiripan_top5)
+```
+Dipakai untuk menghitung E[max] dua slot final tanpa perlu label test.
+
+### KOREKSI RUMUS E[max]
+Rumus lama di sesi sebelumnya, `sigma_d/(2*sqrt(pi))` = 0.2821*sigma, **SALAH**.
+Turunan benar: max(X,Y) = (X+Y)/2 + |X-Y|/2, dan E|d| = sigma_d*sqrt(2/pi), jadi
+**E[max] - rata = 0.3989 * sigma_d**. Nilai keberagaman 41% lebih besar dari
+yang diperkirakan sebelumnya.
+
+### P(top-5 privat) (e72, simulasi 400 rb draw)
+Dua file kita dinilai di 690 user yang SAMA, jadi derau samplingnya berbagi.
+
+| jumlah tim | P(top-5) | P(top-3) |
+|---|---|---|
+| 8 | 0.797 | 0.566 |
+| 11 | 0.682 | 0.483 |
+| 15 | 0.572 | 0.402 |
+
+Nilai keberagaman slot ke-2 (11 tim):
+```
+file kembar        E[max] +0.00025   P(top-5) 0.633
+v29_a + v29_b      E[max] +0.00043   P(top-5) 0.661
+v29_a + v36_lnet   E[max] +0.00056   P(top-5) 0.681   <- rencana
+hipotetis ident .70 E[max] +0.00092  P(top-5) 0.731
+```
+**Keberagaman slot ke-2 adalah pengungkit TERBESAR yang tersisa** — jauh di
+atas apa pun yang bisa diberikan perbaikan model.
+
+### Pencarian kandidat slot-2 (e73, e74; subset bersih 3000 user)
+```
+kandidat                    NDCG_oof   d_kual  ident  E[max]+  P(top5)
+v36_lnet (slot-2 sekarang)   0.66968  +0.00082  0.768 +0.00128   0.804
+META TANPA LGBM + lnet       0.67019  +0.00134  0.749 +0.00165   0.849
+XGB+LGBM reg 50/50           0.66885  -0.00000  0.763 +0.00085   0.745
+META v26 (v29_b)             0.66898  +0.00013  0.925 +0.00053   0.696
+```
+**Putusan: TIDAK ganti.** Keunggulan `META TANPA LGBM + lnet` (P 0.849 vs
+0.804) hampir seluruhnya berasal dari klaim kualitas +0.00134 — persis jenis
+selisih yang 25 kali sudah terbukti noise. Bagian yang BISA dipercaya
+(keberagaman: ident 0.749 vs 0.768) praktis sama. `v36_lnet` sudah cukup
+optimal sebagai slot 2.
+
+**Catatan penting**: kemiripan v29_a-v36_lnet diukur 0.768 di OOF (1 seed)
+tapi 0.860 di file submission (24 seed). **Seed-bagging MENGURANGI
+keberagaman.** Untuk slot ke-2, bagging berat justru merugikan sedikit —
+tapi bagging juga menaikkan kualitas (draw 4-seed rata 0.6598 vs 12/24 seed
+0.66001-0.66118), jadi kedua efeknya saling meniadakan. Tidak ada aksi.
+
+### Ketidakpastian yang PALING menentukan
+`P(top-5)` sangat sensitif thd **jumlah tim yang bersaing di pita 0.660-0.662**
+(0.797 utk 8 tim, 0.572 utk 15 tim). Itu satu-satunya angka yang belum
+diketahui dan bisa dibaca langsung dari papan peringkat.
+
+---
+
 ## 10. Kalau tetap ingin mencoba lagi — apa yang belum ada
 
 - **Set validasi bersih yang baru.** Holdout tersegel lama sudah tercemar.
