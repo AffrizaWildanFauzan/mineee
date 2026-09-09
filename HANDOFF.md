@@ -516,6 +516,64 @@ penambangan noise.
 
 ---
 
+## 9d. GANTI ENCODER TEKS (IndoBERTweet dll) — plafonnya diukur (e78–e80)
+
+### e78 — 7 representasi teks x 3 model, OOF 4000 user
+```
+representasi                            dim     Ridge   LogReg      kNN
+TF-IDF kata (1,2)  [dipakai v38]       2279   0.63787  0.61581  0.52692
+TF-IDF kata (1,4) besar               16058   0.62449  0.60107  0.52555
+TF-IDF karakter (2,6) murni            5584   0.63993  0.62153  0.53330
+hitungan kata mentah (BoW)              322   0.63979  0.61988  0.52853
+HashingVectorizer 2^18               262144   0.63748  0.61781  0.52584
+PADAT: SVD-300                          300   0.63815  0.61497  0.52906
+PADAT: SVD-64 (mirip dim encoder)        64   0.61719  0.59702  0.52404
+--------------------------------------------------------------------
+MiniLM multibahasa (v38, nyata)         384   0.62167  0.60545  0.46716
+```
+Terbaik dari 21 kombinasi = **0.63993**. MiniLM ada DI DALAM pita, di bawah
+median. Representasi jarang, padat, hashing, karakter — semua mendarat di
+0.62–0.64.
+
+**Petunjuk terpenting: BoW mentah 322 dimensi mendapat 0.63979** — praktis
+seri dengan yang terbaik. Artinya sinyal teks di sini pada dasarnya adalah
+"kata kunci modul mana yang muncul". Ini masalah **pencocokan leksikal**,
+bukan pemahaman semantik. Keunggulan IndoBERTweet (bahasa Indonesia informal,
+slang, ragam Twitter) justru menyasar hal yang tidak menentukan di sini.
+
+### e80 — batas atas realistis: pakai representasi TERBAIK di meta
+```
+kanal teks LAMA (TF-IDF kata) : Ridge 0.63798  LogReg 0.61604
+kanal teks BARU (char 2-6)    : Ridge 0.63993  LogReg 0.62153
+META v26 kanal teks lama      : 0.66844
+META v26 kanal teks diganti   : 0.66932   (+0.00088)
+META v26 pakai KEDUA kanal    : 0.66956   (+0.00112)
+SE di 4000 user               : +-0.0028
+```
+Representasi teks TERBAIK yang bisa saya temukan menggerakkan metrik akhir
+**kurang dari sepertiga satu SE**. Sebabnya bobot kanal teks di meta kecil
+(pred_text 0.055, pred_text_clf 0.135) dan sinyal pohon sudah menyerap
+informasi yang sama lewat fitur `mention_*` / `tfidf*_sim`.
+
+### KESALAHAN e79 — jangan diulang
+e79 mencoba mengukur "kanal teks sempurna" dengan mengganti pred_text memakai
+kolom `target`. Hasilnya NDCG@5 = 1.00000. Itu bukan "encoder sempurna", itu
+"memberi kunci jawaban" — batas atas yang tidak bermakna. Dibuang; e80 yang
+dirancang benar (substitusi dengan representasi yang benar-benar dicapai).
+
+### Batasan yang jujur
+`huggingface.co` diblokir kebijakan jaringan di sandbox, jadi IndoBERTweet
+TIDAK diuji langsung. Yang diuji: 7 representasi lain + MiniLM nyata dari
+run Kaggle. Kalau mau memastikan sendiri, v38 sudah mendukungnya — ubah satu
+baris:
+```python
+EMB_NAME = "indolem/indobertweet-base-uncased"
+```
+lalu jalankan; blok holdout tersegel akan menilainya. Prediksi saya: masuk
+pita 0.62–0.64 dan bobot meta mendekati nol, seperti MiniLM.
+
+---
+
 ## 10. Kalau tetap ingin mencoba lagi — apa yang belum ada
 
 - **Set validasi bersih yang baru.** Holdout tersegel lama sudah tercemar.
