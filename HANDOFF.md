@@ -280,6 +280,27 @@ Jangan diulang.
    baru yang cuma menambah kolom tidak mengubah kepala meta yang tidak
    memakainya, jadi varian "lama" pasti terproduksi ulang persis.
 
+   **CARA diff yang benar** — JANGAN pakai ambang nilai mentah (`maxdiff<1e-9`).
+   File yang sama yang ditulis di lingkungan berbeda beda ~4e-08 karena presisi
+   cetak float, dan ambang ketat itu keliru melabelinya "file baru". NDCG@5
+   hanya bergantung pada URUTAN, jadi bandingkan urutan top-5:
+   ```python
+   order5 = lambda d: np.argsort(-d[MODULE_COLS].to_numpy(),1)[:,:5]
+   sama   = np.mean([(x==y).all() for x,y in zip(order5(A),order5(B))])
+   # sama == 1.0  ->  NDCG@5 PERSIS SAMA, jangan kirim
+   ```
+
+8. **Run v37 (9 Sep) tanpa model terlampir = 3 jam komputasi, NOL file baru.**
+   Log menyala benar (`model pretrained tidak ditemukan -> DILEWATI`) dan
+   penutup kode sudah meramalkannya, tapi run tetap diteruskan. Hasil diff:
+   `v37_dua == v37_lnet == v35_lnet == v36_lnet == v38_lnet` (LB 0.66113) dan
+   `v37_emb == v37_v26 == v32_privat_v26` (LB 0.66001), urutan top-5 identik
+   100% di keempatnya. **Kalau baris log embedding bilang DILEWATI, hentikan
+   run saat itu juga.**
+   Satu-satunya nilai yang didapat: bukti bahwa pipeline **deterministik** —
+   kepala v26 dan kepala lnet mereproduksi file dari run lama persis, jadi
+   tidak ada seed drift tersembunyi antar versi kode.
+
 ---
 
 ## 8. Posisi saat ini (per 8 September 2026)
