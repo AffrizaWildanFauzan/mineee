@@ -593,7 +593,7 @@ if RUN_SEALED:
         _v=ndcg_of(p,c)-_b; print(f"    {nm:16s}: {_v:+.5f}")
         if _v>_best[2]: _best=(c,nm,_v)
     print(f"\n  PEMENANG di holdout tersegel: {_best[1]} ({_best[2]:+.5f})")
-    print(f"  -> kirim submission_v36_{ {'s26':'v26','sLN':'lnet','sLM':'emb','s2':'dua'}[_best[0]] }.csv")
+    print(f"  -> kirim submission_v37_{ {'s26':'v26','sLN':'lnet','sLM':'emb','s2':'dua'}[_best[0]] }.csv")
     _t=lambda c: np.argsort(-p.sort_values(["user_id","module_id"],kind="stable")[c]
                             .to_numpy().reshape(-1,17),1)[:,:5]
     print(f"  kemiripan top-5 thd v24: v26 "
@@ -675,9 +675,16 @@ CARA MEMBACA HASIL RUN INI
   Pasangan itu paling beragam, dan Kaggle mengambil yang terbaik dari
   dua yang dipilih.
 
+  PENTING -- kalau di log awal tertulis "jalur embedding DILEWATI", maka
+  model pretrained-nya TIDAK terpasang. Dalam kondisi itu:
+      v37_emb == v37_v26   dan   v37_dua == v37_lnet == v35_lnet
+  jadi TIDAK ADA file baru dan submit-nya sia-sia (persis kesalahan v36
+  yang menghabiskan satu slot). Pasang dulu modelnya lewat
+  Add Input -> Models, baru run ulang.
+
   CATATAN JUJUR: satu pengukuran di 1000 user punya SE sekitar +-0.0015,
-  jadi selisih di bawah itu jangan dianggap pasti. Dua protokol uji saya
-  juga masih berbeda hasilnya untuk listnet (+0.0022..+0.0030 di dalam
-  pipeline vs -0.0005 lewat penggabungan OOF lintas-run); penyebabnya
-  belum saya temukan. lambdarank positif di kedua protokol.
+  jadi selisih di bawah itu jangan dianggap pasti. Untuk listnet, dua
+  protokol uji saya masih berbeda hasilnya (+0.0022..+0.0030 di dalam
+  pipeline vs -0.0005 lewat penggabungan OOF lintas-run) dan papan publik
+  memberi -0.00014; penyebabnya belum saya temukan.
 ==================================================================""")
