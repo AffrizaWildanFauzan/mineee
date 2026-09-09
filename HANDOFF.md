@@ -650,6 +650,30 @@ v38_emb vs v29_a    kemiripan 0.907  E[max] +0.00046
 v29_a  + v36_lnet   kemiripan 0.860  E[max] +0.00056  <- masih terbaik
 ```
 
+### HASIL NYATA IndoBERTweet (v39, dijalankan 11 Sep) — TETAP TIDAK MENOLONG
+Jalur embedding terbukti JALAN (v39_emb != v39_v26). Tapi arahnya justru
+lebih buruk dari MiniLM — pergeseran prediksi thd basis tanpa-embedding:
+```
+                          maxdiff   urutan sama   himpunan sama
+MiniLM       emb vs v26   3.92e-02       88.6%          97.0%
+IndoBERTweet emb vs v26   4.38e-03       94.3%          97.8%   <- LEBIH KECIL
+```
+Geseran yang lebih kecil = meta-Ridge memberi bobot LEBIH RENDAH ke sinyal
+IndoBERTweet daripada ke MiniLM. Prediksi e78-e80 terkonfirmasi: encoder
+Indonesia-informal tidak menolong pada tugas yang sifatnya pencocokan
+leksikal.
+
+Status keempat file v39:
+```
+v39_lnet : DUPLIKAT dari v35_lnet/v36_lnet (LB 0.66113)  -> jangan kirim
+v39_v26  : DUPLIKAT dari v32_privat_v26   (LB 0.66001)  -> jangan kirim
+v39_dua  : file baru, kemiripan thd v29_a 0.910, E[max] +0.00045
+v39_emb  : file baru, kemiripan thd v29_a 0.928, E[max] +0.00041
+v36_lnet : (pembanding)  kemiripan thd v29_a 0.860, E[max] +0.00056  <- TETAP TERBAIK
+```
+Kedua file baru KALAH keberagaman dari slot-2 yang sudah ada, dan kualitasnya
+belum terukur. Tidak ada alasan mengganti. Rencana tetap v29_a + v36_lnet.
+
 ### Batasan yang jujur
 `huggingface.co` diblokir kebijakan jaringan di sandbox, jadi IndoBERTweet
 TIDAK diuji langsung. Yang diuji: 7 representasi lain + MiniLM nyata dari
