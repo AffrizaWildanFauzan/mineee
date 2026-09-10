@@ -650,7 +650,46 @@ v38_emb vs v29_a    kemiripan 0.907  E[max] +0.00046
 v29_a  + v36_lnet   kemiripan 0.860  E[max] +0.00056  <- masih terbaik
 ```
 
-### HASIL NYATA IndoBERTweet (v39, dijalankan 11 Sep) — TETAP TIDAK MENOLONG
+### !!! KOREKSI BESAR (12 Sep): v39_dua = 0.66242 = REKOR TIM BARU !!!
+`submission_v39_dua.csv` (META v26 + listnet + embedding IndoBERTweet) dikirim
+dan mendapat **0.66242**, mengalahkan rekor lama v29_a (0.66118) sebesar
++0.00124. Tim naik dari peringkat 7 ke **4** (top-5).
+
+**Saya (sesi ini) menyarankan JANGAN mengirimnya. Saran itu SALAH.**
+Cacat penalarannya, supaya tidak terulang:
+- Saya memakai "kualitasnya belum terukur" sebagai alasan tidak mengirim.
+  Padahal analisis saya sendiri sudah membuktikan evaluasi sisi-train tidak
+  mampu membedakan selisih sebesar ini. Papan peringkat adalah SATU-SATUNYA
+  alat ukur yang bekerja di resolusi ini — dan saya menyarankan untuk tidak
+  memakainya, dengan alasan hasilnya belum terukur. Melingkar.
+- Blok tersegel bilang `+keduanya` (0.66395) LEBIH BURUK dari `+listnet`
+  (0.66507). Papan peringkat bilang sebaliknya. Sebelumnya tersegel juga
+  salah untuk listnet tapi ke arah BERLAWANAN. Kesimpulan yang benar:
+  **blok tersegel tidak punya daya prediksi sama sekali di resolusi ini,
+  bukan sekadar bias satu arah.** Jangan pakai untuk memutuskan lagi.
+- ATURAN BARU: kalau sebuah file BARU (bukan duplikat) dan slot harian masih
+  ada, KIRIM. Informasi dari papan peringkat lebih berharga daripada tebakan
+  sisi-train, dan memilih berdasarkan skor publik itu NETRAL (§7 no.3),
+  jadi mengirim tidak punya biaya selain slot.
+
+**Tapi jangan salah ke arah sebaliknya**: 0.66242 = +2.66 sd di atas rata
+keluarga inti (23 submission, rata 0.65982, sd 0.00098). P(maks dari 27
+submission >= 2.66 sd murni keberuntungan) = **0.10**. Bukti nyata, BELUM
+bukti kuat. Uji replikasi wajib: kirim `v39_emb`, dan `v38_dua` (kepala sama,
+encoder MiniLM) kalau slot masih ada.
+
+**Pasangan slot final DIPERBARUI** (kualitas disusutkan 31%):
+```
+v29_a + v36_lnet    kemiripan 0.860   E[max] = 0.66201
+v29_a + v39_dua     kemiripan 0.910   E[max] = 0.66212   <- TERBAIK
+v36_lnet + v39_dua  kemiripan 0.937   E[max] = 0.66206
+```
+`v39_dua` kalah keberagaman tapi menang kualitas, dan kualitas menang tipis.
+=> **slot 1 `v29_a`, slot 2 `v39_dua`.**
+
+---
+
+### HASIL NYATA IndoBERTweet (v39, dijalankan 11 Sep) — analisis PRA-SUBMIT (terbantah di atas)
 Jalur embedding terbukti JALAN (v39_emb != v39_v26). Tapi arahnya justru
 lebih buruk dari MiniLM — pergeseran prediksi thd basis tanpa-embedding:
 ```
@@ -673,6 +712,9 @@ v36_lnet : (pembanding)  kemiripan thd v29_a 0.860, E[max] +0.00056  <- TETAP TE
 ```
 Kedua file baru KALAH keberagaman dari slot-2 yang sudah ada, dan kualitasnya
 belum terukur. Tidak ada alasan mengganti. Rencana tetap v29_a + v36_lnet.
+
+^^ PARAGRAF DI ATAS TERBUKTI SALAH. v39_dua dikirim dan dapat 0.66242,
+rekor tim baru. Lihat blok KOREKSI BESAR di atas.
 
 ### Batasan yang jujur
 `huggingface.co` diblokir kebijakan jaringan di sandbox, jadi IndoBERTweet
