@@ -650,13 +650,19 @@ v38_emb vs v29_a    kemiripan 0.907  E[max] +0.00046
 v29_a  + v36_lnet   kemiripan 0.860  E[max] +0.00056  <- masih terbaik
 ```
 
-### !!! KOREKSI BESAR (12 Sep): v39_dua = 0.66242 = REKOR TIM BARU !!!
-`submission_v39_dua.csv` (META v26 + listnet + embedding IndoBERTweet) dikirim
-dan mendapat **0.66242**, mengalahkan rekor lama v29_a (0.66118) sebesar
-+0.00124. Tim naik dari peringkat 7 ke **4** (top-5).
+### v39_dua = 0.66242 — TAPI LATE SUBMISSION, TIDAK DIHITUNG
+`submission_v39_dua.csv` (META v26 + listnet + embedding IndoBERTweet)
+mendapat **0.66242** di papan publik, +0.00124 di atas v29_a (0.66118).
+**Kompetisi sudah berakhir saat itu dikirim — ini LATE SUBMISSION dan
+TIDAK masuk peringkat akhir.** Angkanya sah sebagai informasi, tapi nol
+sebagai hasil lomba. Peringkat akhir ditentukan oleh submission yang
+tercentang saat deadline (v29_a + apa pun yang dipilih Kaggle otomatis).
 
-**Saya (sesi ini) menyarankan JANGAN mengirimnya. Saran itu SALAH.**
-Cacat penalarannya, supaya tidak terulang:
+**Saya menyarankan JANGAN mengirimnya.** Penalaran di balik saran itu cacat
+(diuraikan di bawah) — TAPI biaya praktisnya NOL di kasus ini, karena v39
+baru selesai dibuat setelah deadline, jadi filenya tidak mungkin terpilih
+sebagai slot final apa pun saran saya. Yang mengikat adalah JADWAL, bukan
+saran saya. Cacat penalarannya tetap dicatat karena berlaku umum:
 - Saya memakai "kualitasnya belum terukur" sebagai alasan tidak mengirim.
   Padahal analisis saya sendiri sudah membuktikan evaluasi sisi-train tidak
   mampu membedakan selisih sebesar ini. Papan peringkat adalah SATU-SATUNYA
@@ -678,14 +684,21 @@ submission >= 2.66 sd murni keberuntungan) = **0.10**. Bukti nyata, BELUM
 bukti kuat. Uji replikasi wajib: kirim `v39_emb`, dan `v38_dua` (kepala sama,
 encoder MiniLM) kalau slot masih ada.
 
-**Pasangan slot final DIPERBARUI** (kualitas disusutkan 31%):
+**Perhitungan pasangan slot final di bawah ini sudah TIDAK BERLAKU** —
+kompetisi berakhir, slot sudah terkunci. Disimpan sebagai catatan metode:
 ```
 v29_a + v36_lnet    kemiripan 0.860   E[max] = 0.66201
-v29_a + v39_dua     kemiripan 0.910   E[max] = 0.66212   <- TERBAIK
+v29_a + v39_dua     kemiripan 0.910   E[max] = 0.66212
 v36_lnet + v39_dua  kemiripan 0.937   E[max] = 0.66206
 ```
-`v39_dua` kalah keberagaman tapi menang kualitas, dan kualitas menang tipis.
-=> **slot 1 `v29_a`, slot 2 `v39_dua`.**
+
+### PELAJARAN UTAMA UNTUK LOMBA BERIKUTNYA
+Kepala meta terbaik (`META v26 + listnet + embedding`) baru ditemukan
+SETELAH deadline. Penyebabnya bukan kekurangan ide — melainkan urutan
+kerja: ~30 hari dihabiskan mengejar selisih 0.0003-0.0017 yang seluruhnya
+di dalam derau, sementara kepala meta yang berbeda struktur baru dicoba
+di hari terakhir. Lain kali: **variasikan STRUKTUR kepala meta lebih awal,
+dan kirim setiap file yang benar-benar baru selagi slot harian masih ada.**
 
 ---
 
