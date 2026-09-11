@@ -168,6 +168,48 @@ Saya periksa keenamnya satu per satu terhadap kedua repo — hasilnya nihil
 di semua sel. Keduanya kuat di *riset & alur kerja*, kosong di
 *diagnostik & disiplin*.
 
+### Skill lain yang menutup SEBAGIAN celah (hasil pencarian, diperiksa)
+
+| Repo / alat | Isi | Menutup celah mana |
+|---|---|---|
+| [juanlurg/data-science-claude-skills](https://github.com/juanlurg/data-science-claude-skills) | `dataset-doctor` (skor kesehatan data, deteksi kebocoran, drift, imbalance, multikolinearitas), `experiment-tracker` (**catat & bandingkan eksperimen ML lokal, punya leaderboard internal**), `auto-eda`, `paper-to-code`, `sql-optimizer` | sebagian `/leak-hunt`, sebagian `/cv-lb-gap`; `experiment-tracker` = ledger eksperimen |
+| [borghei/Claude-Skills](https://github.com/borghei/Claude-Skills) | koleksi skill data-analytics termasuk `data-scientist` | pendukung Tingkat 1 |
+| [MLWave/Kaggle-Ensemble-Guide](https://github.com/MLWave/Kaggle-Ensemble-Guide) | kode ensembling klasik: rank averaging, voting, blending | bahan mentah `/final-slots` |
+| [kyaiooiayk/Kaggle-Competitions-Analysis](https://github.com/kyaiooiayk/Kaggle-Competitions-Analysis) | kompendium metode solusi terkenal lintas lomba | bahan Rantai A |
+| [LeakageDetector](https://arxiv.org/pdf/2503.14723) (plugin PyCharm, bukan skill Claude) | deteksi kebocoran **level KODE** di pipeline ML (mis. fit scaler sebelum split) | sebagian `/cv-lb-gap` — kebocoran kode adalah penyebab utama CV optimis |
+
+**Dua yang layak dipasang meski bukan untuk lomba:**
+- [NVIDIA/SkillSpector](https://github.com/nvidia/skillspector) — pemindai keamanan skill sebelum dipasang (deteksi prompt injection, eksfiltrasi data, risiko rantai pasok). Relevan karena Anda memasang ~430 skill dari banyak sumber.
+- [marky291/claude-drift](https://github.com/marky291/claude-drift) — menemukan di mana `CLAUDE.md`, skill, dan agent sudah melenceng dari kenyataan kode. Menjaga tumpukan disiplin tetap akurat.
+
+### Seberapa jauh celahnya tertutup
+
+| Celah | Padanan terdekat | Tertutup |
+|---|---|---|
+| `/noise-floor` | tidak ada | **0%** |
+| `/sub-diff` | tidak ada | **0%** |
+| `/final-slots` | MLWave/Kaggle-Ensemble-Guide (teknik blending) | ~25% — memberi teknik, bukan pemilihan berbasis E[max] |
+| `/leak-hunt` | `dataset-doctor` + `auto-eda` | ~30% — mendeteksi masalah kualitas data, **bukan** inversi generator |
+| `/cv-lb-gap` | `LeakageDetector` + `experiment-tracker` | ~40% — bisa menemukan penyebab, tidak mendiagnosis jaraknya |
+| `/lb-snapshot` | `nvidia-kaggle-skill` | ~40% — mengambil papan, tidak menormalkan per jumlah submission |
+
+Tidak ada satu pun yang tertutup penuh. Empat dari enam di bawah 40%.
+
+### Catatan dari write-up pemenang yang ikut terbaca
+
+Beberapa hal yang muncul berulang di solusi juara dan relevan langsung:
+- *"Ridge lebih stabil dari hill-climbing sebagai blender — ia menyusutkan
+  bobot alih-alih memasangnya terlalu agresif."* Kami memang pakai Ridge
+  `positive=True`. Ini benar.
+- *"Keragaman model (NN + LGBM + XGB + Trees) menurunkan varians."* Kami
+  **tidak punya NN sama sekali** di model dasar — semuanya pohon. Ini
+  konsisten dgn temuan bahwa meta kami cuma menang +0.002 atas model dasar
+  terbaik.
+- *"Selalu percaya CV di atas papan publik."* **Ini hanya berlaku kalau CV
+  Anda benar.** CV kami optimis +0.005. Jadi urutannya: verifikasi dulu CV
+  sejalan papan (Tingkat 2), BARU percaya CV. Mengikuti nasihat ini dengan
+  CV yang rusak justru memperburuk.
+
 ---
 
 ## 4. Yang masih kurang — enam skill kustom
