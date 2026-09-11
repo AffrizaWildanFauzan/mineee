@@ -11,10 +11,12 @@ tingkat prioritas di `STRATEGI.md`.
 > ikut terpicu. Pangkas dulu ke profil lomba. Anda sudah punya alatnya:
 > `skill-stocktake`, `skill-health`, `prune`, `config-gc`.
 >
-> **(2) Penilaian di dokumen ini berdasarkan NAMA skill, bukan isinya.**
-> Skill-skill itu tidak terpasang di sesi tempat dokumen ini ditulis, jadi
-> isinya tidak terbaca. Sebelum mengandalkan salah satunya — terutama
-> `nvidia-kaggle-skill` dan `recsys-pipeline-architect` — baca isinya dulu.
+> **(2) Sebagian besar penilaian di sini berdasarkan NAMA skill, bukan
+> isinya**, karena skill-skill itu tidak terpasang di sesi tempat dokumen
+> ini ditulis. **Pengecualian:** `nvidia-kaggle-skill` dan
+> `shepsci/kaggle-skill` sudah diperiksa langsung dari repo-nya
+> (lihat bagian 3). Sebelum mengandalkan yang lain — terutama
+> `recsys-pipeline-architect` — baca isinya dulu.
 
 ---
 
@@ -47,7 +49,7 @@ Harus dibuat sendiri — lihat bagian 3.
 
 | Skill | Kegunaan | Prioritas |
 |---|---|---|
-| `nvidia-kaggle-skill` | khusus Kaggle | **baca isinya dulu** |
+| `nvidia-kaggle-skill` | konteks lomba + telaah write-up pemenang + reproduksi kernel + submit | **tinggi** — sudah diperiksa, lihat bagian 3 |
 | `recsys-pipeline-architect` | pipeline rekomendasi | **tinggi** — MineToday literally tugas rekomendasi (17 modul/user) |
 | `mle-workflow` | alur kerja ML engineering | tinggi |
 | `pytorch-patterns` | kalau pakai jaringan saraf | sedang |
@@ -145,19 +147,45 @@ Baru dijalankan **setelah** Tingkat 1–2 tuntas.
 
 ---
 
-## 3. Yang masih kurang — enam skill kustom
+## 3. Repo skill Kaggle yang NYATA — sudah diperiksa isinya
+
+Dua plugin Kaggle utama yang ada di publik, dan saya periksa halaman
+repo-nya langsung:
+
+| Repo | Isi |
+|---|---|
+| [NVIDIA/nvidia-kaggle](https://github.com/NVIDIA/nvidia-kaggle) | konteks lomba, aturan, metrik, timeline; indeks & telaah **write-up pemenang** dan notebook publik; indeks diskusi; reproduksi kernel; submit; kelola dataset |
+| [shepsci/kaggle-skill](https://github.com/shepsci/kaggle-skill) | unduh dataset/model, jalankan notebook, laporan lomba, ambil write-up hackathon, koleksi badge |
+
+**Temuan penting: `nvidia-kaggle-skill` sudah Anda punya, dan ia
+mencakup "study public writeups and notebooks" + "discussion indexing and
+searching".** Itu persis **Rantai A (menambang solusi pemenang)** — aktivitas
+ROI tertinggi yang tidak pernah kami lakukan di MineToday. Jadi rantai itu
+bisa dijalankan dengan skill yang sudah terpasang; tinggal dipakai.
+
+**Tapi keduanya TIDAK mencakup satu pun dari enam celah di bawah.**
+Saya periksa keenamnya satu per satu terhadap kedua repo — hasilnya nihil
+di semua sel. Keduanya kuat di *riset & alur kerja*, kosong di
+*diagnostik & disiplin*.
+
+---
+
+## 4. Yang masih kurang — enam skill kustom
 
 Dari ~430 skill, **tidak ada satu pun yang mengerjakan dua hal yang
 menentukan lomba.** Enam ini harus dibuat sendiri dengan `skill-creator`:
 
-| Skill | Gunanya | Ada padanannya? |
-|---|---|---|
-| `/noise-floor` | ukur resolusi alat ukur dari 2 submission baseline berseed beda | tidak |
-| `/leak-hunt` | daftar periksa kebocoran + inversi generator | tidak |
-| `/cv-lb-gap` | regresi papan~CV; diagnosis selisih level & kemiringan | tidak |
-| `/sub-diff` | bandingkan urutan top-K thd seluruh arsip submission | tidak |
-| `/final-slots` | hitung E[max] tiap pasangan, rekomendasikan 2 slot | tidak |
-| `/lb-snapshot` | papan penuh + jumlah submission, peringkat ternormalisasi | tidak |
+**Tidak ada repo publiknya.** Saya mencarinya dan memeriksa dua plugin
+Kaggle terbesar — keenamnya nihil. Harus dibuat sendiri dgn `skill-creator`.
+
+| Skill | Gunanya | nvidia-kaggle | kaggle-skill |
+|---|---|---|---|
+| `/noise-floor` | ukur resolusi alat ukur dari 2 submission baseline berseed beda | tidak | tidak |
+| `/leak-hunt` | daftar periksa kebocoran + inversi generator | tidak | tidak |
+| `/cv-lb-gap` | regresi papan~CV; diagnosis selisih level & kemiringan | tidak | tidak |
+| `/sub-diff` | bandingkan urutan top-K thd seluruh arsip submission | tidak | tidak |
+| `/final-slots` | hitung E[max] tiap pasangan, rekomendasikan 2 slot | tidak | tidak |
+| `/lb-snapshot` | papan penuh + jumlah submission, peringkat ternormalisasi | tidak | tidak |
 
 Logikanya sudah terbukti di sesi MineToday:
 - pembanding submission menangkap **3 duplikat** yang akan terbuang
@@ -172,7 +200,7 @@ CV +0.005 milik sendiri.
 
 ---
 
-## 4. Profil lomba — set minimal yang diaktifkan
+## 5. Profil lomba — set minimal yang diaktifkan
 
 Setelah `prune`, aktifkan hanya ini (~25 skill):
 
@@ -210,7 +238,7 @@ hanya menambah kebisingan pemicuan.
 
 ---
 
-## 5. Kalibrasi jujur
+## 6. Kalibrasi jujur
 
 **Untuk skor papan peringkat, dampak skill kecil.** Tidak ada skill yang
 menemukan kebocoran atau menutup defisit modeling 0.005. Itu ditutup oleh
