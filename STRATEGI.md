@@ -201,6 +201,73 @@ pernah mencobanya sama sekali, seperti yang kami lakukan.
 
 ---
 
+## TINGKAT 0 — Strategi SEBELUM lomba dimulai
+
+Empat hal yang tidak melibatkan data sama sekali, dan salah satunya
+pengungkitnya lebih besar dari seluruh 30 hari kerja kami.
+
+### 0a. MEMILIH lomba  ⭐ pengungkit terbesar, nol jam modeling
+Finalis = top 5. Peluang dasar kira-kira `5/N`:
+```
+ 15 tim -> 0.33      40 tim -> 0.12
+ 20 tim -> 0.25      60 tim -> 0.08
+ 30 tim -> 0.17     100 tim -> 0.05
+```
+Seluruh hasil 30 hari kerja kami (+0.00230 = 1,35 SE) menaikkan peluang
+sekitar 0.20 → 0.25 di pita padat.
+**Pindah dari lomba 60 tim ke lomba 20 tim: 0.08 → 0.25. Tiga kali lipat,
+tanpa satu baris kode.**
+
+Kriteria memilih:
+- **Jumlah tim** — cek pendaftar sebelum memutuskan ikut
+- **Bentuk data** — data sintetis (target berpola, teks templated) lebih
+  mungkin punya generator yang bisa dibalik; itu jalur menang yang nyata
+- **Ada babak final berbasis presentasi?** kalau ya, skor papan bukan
+  satu-satunya penentu, dan tim yang kuat presentasi punya jalur kedua
+- **Metrik** — metrik dgn derau tinggi (NDCG@5 di 690 user, SE 0.002)
+  membuat papan jadi undian; metrik yang lebih stabil menghargai kerja
+- **Apakah Anda punya keunggulan spesifik** di domain itu
+
+Ikut 2 lomba kecil yang cocok lebih baik daripada 1 lomba besar yang ramai.
+
+### 0b. ATURAN BERHENTI, ditulis di awal
+Kami bekerja sampai hari terakhir dan submission ke-60. Lihat papan privat:
+```
+tim              sub   terakhir aktif   gerak   peringkat akhir
+Raja Batam        18    11 hari lalu     +17         9
+timnya abror      27     1 hari lalu     +10        11
+Info Loker        28     1 hari lalu     +10        12
+KITA              60     1 hari lalu      -6        13
+```
+**Raja Batam berhenti 11 hari sebelum deadline dengan 18 submission, dan
+naik 17 peringkat.** Kami bekerja sampai akhir dengan 60 submission, dan
+turun 6.
+
+Tulis aturan berhenti SEBELUM mulai, misalnya:
+> "Kalau 5 ide berturut-turut menghasilkan efek di dalam derau, berhenti
+> menambah ide. Kunci dua slot final, dan sisa waktu dipakai untuk
+> memverifikasi validasi — bukan untuk submission baru."
+
+### 0c. Penggabungan tim
+Kaggle mengizinkan merge tim sampai batas tertentu. Tim solo yang kuat di
+peringkat 15–25 sering mau bergabung mendekati akhir. Satu merge bisa
+memberi keragaman model yang tidak mungkin Anda bangun sendiri — dan
+keragaman itulah yang memberi nilai pada 2 slot final. Cek aturan mergenya
+di minggu pertama, bukan minggu terakhir.
+
+### 0d. Pandangan portofolio lintas lomba
+Satu lomba = satu tarikan undian. Peringkat 13 di lomba dgn derau 2 SE
+tidak memberi tahu banyak tentang kemampuan Anda.
+Yang diukur lintas lomba: apakah `POSTMORTEM.md` berikutnya menyebut
+kesalahan yang BERBEDA. Kalau kesalahannya berulang, prosesnya yang salah,
+bukan undiannya.
+
+Gunakan `learn` / `evolve` / `promote` untuk memindahkan pelajaran antar
+lomba, dan simpan satu berkas `PELAJARAN.md` lintas-lomba yang tidak
+pernah direset.
+
+---
+
 ## Satu kalimat
 
 **Di MineToday kami menghabiskan 30 hari mengejar 0.0005 di dalam derau,
