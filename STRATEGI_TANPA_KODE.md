@@ -169,6 +169,66 @@ terjadi di MineToday.** Itu bukan pelengkap — itu perbaikan pokok.
 
 ---
 
+## TINGKAT D — Skill mana yang dipakai, dan RANTAI-nya
+
+Skill saling menyambung dalam satu sesi. Tapi kalibrasi dulu:
+**untuk skor papan, dampaknya kecil** — tidak ada skill yang menemukan
+kebocoran atau menutup defisit modeling. **Untuk disiplin dan efisiensi,
+dampaknya nyata.**
+
+### Rantai 1 — Tumpukan disiplin: `init` → `update-config` → `skill-creator`
+Hanya berfungsi kalau ketiganya dipakai BERSAMA:
+- `init` → `CLAUDE.md`: aturannya tertulis
+- `update-config` → hooks: aturannya DITEGAKKAN harness, bukan oleh ingatan
+- `skill-creator` → `/leak-hunt`, `/sub-diff`, `/cv-lb-gap`: prosedurnya identik
+  untuk setiap anggota tim
+
+Sendiri-sendiri lemah. `CLAUDE.md` tanpa hooks = dokumen yang dilanggar.
+Hooks tanpa `CLAUDE.md` = penghalang tanpa alasan. Bertiga jadi sistem.
+
+### Rantai 2 — `dataviz` untuk membuat kesalahan TERLIHAT  ⭐
+Yang paling disesali. Kami punya 15 pasang (skor CV, skor papan) dan baru
+menghitung korelasinya SETELAH lomba selesai. Grafik sebar CV-vs-papan yang
+diperbarui tiap 3 submission akan memperlihatkan jarak +0.00503 itu di
+**minggu kedua**. Datanya sudah ada sejak awal; kami tidak pernah
+melihatnya dengan cara yang benar. Satu grafik.
+
+### Rantai 3 — `xlsx` ATAU Artifact untuk ledger tim
+`xlsx` lebih sederhana dan semua orang bisa; Artifact lebih hidup dan
+tersimpan bersama. Pilih SATU, jangan dua-duanya.
+
+### Peringkat skill
+| Skill | Untuk apa | Dampak skor | Dampak proses |
+|---|---|---|---|
+| `skill-creator` | bungkus prosedur jadi `/perintah` | — | **Tinggi** |
+| `update-config` | hooks penegakan | — | **Tinggi** |
+| `init` | CLAUDE.md aturan tim | — | **Tinggi** |
+| `dataviz` | CV-vs-papan, kurva belajar | **Sedang** | Sedang |
+| `artifact-capabilities` | papan kendali tim | — | Sedang–tinggi |
+| `xlsx` | ledger submission | — | Sedang |
+| `code-review` | cari bug diam di pipeline | **Sedang** | Sedang |
+| `pptx` / `docx` | babak final | Situasional | — |
+| `loop` | snapshot papan, pengingat H-3 | — | Sedang |
+| `pdf` | baca aturan/paper | — | Rendah |
+
+Tidak relevan untuk lomba: `morning`, `setup-writing-style`,
+`import-memory`, `design`, `run`, `security-review`, `claude-api`,
+`keybindings-help`.
+
+### Yang mungkin tak terduga: `code-review` punya dampak SKOR
+Bug nyata yang terjadi di MineToday:
+- `sort_values("user_id")` tidak stabil → urutan modul teracak sebelum
+  `reshape(n,17)` → skor palsu 0.2545
+- dtype kategori hilang setelah merge → LightGBM error
+- daftar seed rusak karena `sed`
+
+Dua dari tiga ketahuan karena hasilnya aneh. Bug yang TIDAK menghasilkan
+angka aneh tidak akan ketahuan sama sekali — dan bug diam di pipeline
+ranking bisa memakan 0.005 tanpa jejak. Satu pass review sebelum run besar
+itu murah.
+
+---
+
 ## Catatan jujur
 
 Lapisan tanpa-kode **tidak akan** menutup defisit modeling 0.005, dan
@@ -178,6 +238,9 @@ berantakan, dan memastikan disiplin yang sudah Anda sepakati benar-benar
 dijalankan.
 
 Di MineToday, kerugian dari proses yang buruk saya perkirakan setara
-beberapa hari kerja terbuang dan 3 slot submission hangus. Itu tidak
-mengubah peringkat 13 jadi finalis — tapi di lomba yang lebih ketat, itu
-selisih yang nyata.
+beberapa hari kerja terbuang dan 3 slot submission hangus — sekitar 15–20%
+usaha. Itu tidak mengubah peringkat 13 jadi finalis, tapi di lomba yang
+lebih ketat itu selisih yang nyata.
+
+**Ringkasnya: skill tidak membuat Anda menang, tapi mencegah Anda kalah
+karena hal bodoh.** Yang membuat menang tetap Tingkat 1–2 di `STRATEGI.md`.
