@@ -1,172 +1,213 @@
 # Post-mortem — MineToday IT Today 2026
 
-**Hasil akhir: peringkat 13 papan privat. Tidak lolos finalis (top 5).**
+**Hasil akhir: peringkat 13 dari papan privat. Tidak lolos finalis.**
 
-Dokumen ini untuk lomba berikutnya. Isinya kesalahan yang saya (Claude) buat,
-diurutkan berdasarkan biayanya, lalu daftar periksa yang konkret.
-
----
-
-## 1. Angka yang menjelaskan segalanya
-
-```
-terbaik kode tim sendiri (v21)     0.65888
-terbaik setelah 59 submission      0.66118
-kenaikan                           +0.00230  = 1,35 SE
-```
-
-30 hari, 82 eksperimen, 59 submission → **1,35 SE**. Secara praktis nol.
-
-```
-plafon CV kita                     ~0.667
-psi-1                              0.70566  =  +19 SE di atas plafon kita
-kc mw ke ipb                       0.96619  = +148 SE di atas plafon kita
-```
-
-Dua tim independen jauh di atas plafon yang saya hitung. **Itu bukan anomali.
-Itu struktur dalam data yang tidak pernah saya temukan.**
-
-Peringkat 13 konsisten dengan ~25 tim berdesakan di pita derau — bukan 8–11
-tim seperti yang saya asumsikan waktu menghitung peluang.
+Versi ini ditulis ulang setelah papan privat lengkap + skor privat tiap
+submission tersedia. **Beberapa kesimpulan saya di versi pertama TERBALIK.**
 
 ---
 
-## 2. Kesalahan saya, diurutkan berdasarkan biaya
+## 1. Papan privat final
 
-### #1 — Menyebut 0.966 "anomali" lalu menutup penyelidikannya
-**Biaya: seluruh lomba.**
-
-Saya mengaudit skor itu dan menyimpulkan "tidak terjangkau dari data yang
-diberikan". Cacatnya: saya membuktikan skor itu tidak terjangkau **oleh
-pendekatan saya**, lalu menyimpulkan ia tidak terjangkau **pada prinsipnya**.
-Dua pernyataan yang berbeda.
-
-Lalu `psi-1` muncul di 0.70566 — konfirmasi independen kedua — dan saya
-**tetap** menyebutnya anomali, bahkan memakainya sebagai alasan bahwa dua
-slot finalis "hangus".
-
-> **ATURAN: skor yang jauh di atas plafon Anda berarti model plafon Anda
-> salah, bukan skornya palsu.** Kecuali Anda bisa menunjukkan kecurangan
-> spesifiknya. Satu tim bisa keberuntungan; dua tim independen adalah sinyal.
-
-### #2 — Mengukur berulang-ulang di resolusi yang sudah terbukti buta
-82 eksperimen, mayoritas menguji apakah selisih 0.0003–0.0017 itu nyata.
-Jawabannya hampir selalu "noise". Setelah ~5 hasil semacam itu, kesimpulan
-yang benar adalah **"seluruh wilayah ini didominasi derau, pindah ruang
-pencarian"** — bukan "ukur lebih teliti lagi".
-
-### #3 — Memberi angka probabilitas yang bersandar pada asumsi terlemah
-Saya sendiri menulis "jumlah tim di pita adalah ketidakpastian yang PALING
-menentukan", meminta tangkapan layar papan yang lebih panjang, tidak
-mendapatkannya — lalu **tetap** mengutip P(top-5) = 0.37–0.48.
-
-Dengan ~25 tim di pita, angka sebenarnya ≈ **0.20**.
-
-> **ATURAN: kalau satu input tidak diketahui dan ia mendominasi hasilnya,
-> jangan keluarkan angka tunggal.** Keluarkan sensitivitasnya saja, dan
-> jadikan input itu prasyarat yang memblokir.
-
-### #4 — Terus memakai holdout tersegel setelah membuktikan ia tidak informatif
-Blok tersegel salah untuk listnet (bilang +0.0030, papan bilang ~0), lalu
-salah ke **arah berlawanan** untuk embedding (bilang `+keduanya` lebih buruk,
-papan bilang +0.00124). Saya mendokumentasikan kegagalan dua-arah itu — lalu
-tetap memakainya untuk menyarankan **jangan** kirim `v39_dua`.
-
-### #5 — Variasi STRUKTUR terlambat
-Kepala meta terbaik (`META v26 + listnet + embedding`, 0.66242) baru dicoba
-di hari terakhir. Waktu habis untuk tuning hyperparameter, seed bagging, dan
-ganti encoder — tiga hal yang terbukti **tidak** berpengaruh.
+```
+ 1  kc mw ke ipb        0.96748   (23 submission)
+ 2  psi-1               0.70343   (39)
+ 3  Trio Badut          0.66773   (46)   ▲7
+ 4  Datadataan          0.66718   (51)   ▲2
+ 5  Dikeri Leon         0.66678   (49)   ▼2   ← ambang finalis
+ 6  Sirloin Wagyu A5    0.66460   (37)   ▼1
+ 7  Jackal              0.66411   (44)   ▲6
+ 8  cupuu               0.66297   (37)   ▲6
+ 9  Raja Batam          0.66290   (18)   ▲17
+10  soloajaa            0.66259   (40)   ▲1
+11  timnya abror        0.66243   (27)   ▲10
+12  Info Loker          0.66195   (28)   ▲10
+13  Nice See Go Range   0.66183   (60)   ▼6   ← KITA
+14  NGEDATAYUK          0.66126   (59)   ▼2
+```
 
 ---
 
-## 3. Yang benar — jangan dibuang
+## 2. TIGA KESIMPULAN SAYA YANG TERBUKTI SALAH
 
-- **Kuantifikasi derau (e68).** SE selisih = 0.00171 di papan publik. Tanpa
-  ini kami akan mengejar hantu jauh lebih lama.
-- **Audit kebocoran lewat uji permutasi label (e61/e62).** Metodologinya
-  bersih; hasilnya (tidak ada kebocoran di pipeline kami) valid.
-- **Matematika E[max] untuk memilih 2 slot final.** Pasangan yang dipilih
-  memang optimal dari yang tersedia. `v29_a` + `v36_lnet` memberi P tertinggi.
-- **Kurva belajar (e70).** Diagnosis "terbatas data, bukan terbatas model"
-  benar dan berguna.
-- **Disiplin diff sebelum submit.** Menangkap 3 submission duplikat yang
-  akan terbuang percuma.
+### SALAH #1 — "Selisih antar tim itu derau, ini undian"
+Kerangka berpikir yang saya pakai sepanjang lomba. **Salah.**
 
-Masalahnya bukan ketelitian. Masalahnya **ruang pencarian**.
+```
+kenaikan publik → privat
+  Datadataan        0.66193 → 0.66718   +0.00525
+  Dikeri Leon       0.66345 → 0.66678   +0.00333
+  Sirloin Wagyu A5  0.66211 → 0.66460   +0.00249
+  KITA (v36_lnet)   0.66113 → 0.66183   +0.00070
+```
+Rata-rata SELURUH file kita naik +0.00078 dari publik ke privat — jadi
++0.00070 itu tepat di garis dasar kita sendiri. Pesaing naik 3–7 kali lipat
+lebih banyak. **Mereka model-nya memang lebih baik, bukan lebih beruntung.**
+
+Selisih ke ambang finalis: **+0.00495 = 2,45 SE.** Itu bukan derau.
+
+**Kenapa saya salah:** SE antar-tim saya estimasi memakai DUA MODEL KITA
+SENDIRI yang berkorelasi 0.9856. Saya mencatat itu "batas bawah" lalu
+memakainya seolah nilai sebenarnya. Akibatnya setiap tim tampak seri dengan
+kita secara statistik, padahal tidak.
+
+### SALAH #2 — "Memilih berdasarkan skor publik itu netral"
+Saya turunkan angka `0.31 − 0.69×(310/690) = 0.000` dan memakainya berkali-kali.
+**Terukur di 15 file kita:**
+```
+kemiringan regresi privat~publik   = +0.470   (teori saya: +0.310)
+korelasi Pearson publik vs privat  = +0.535
+memilih file publik-tertinggi → privat 0.66203
+memilih acak                  → privat 0.66058
+KEUNTUNGAN memilih lewat publik      +0.00145   <- POSITIF, bukan netral
+```
+Skor publik jauh lebih informatif daripada klaim saya. Saran "netral" itu
+melemahkan justru perilaku yang benar.
+
+### SALAH #3 — "Top-5 tidak terjangkau oleh modeling"
+Ini kesimpulan versi pertama post-mortem, dan juga salah.
+```
+OOF CV penuh kita, + listnet : 0.66686
+3 tim normal teratas di privat: 0.66678 – 0.66773
+PRIVAT NYATA kita            : 0.66183
+```
+Tiga tim normal mencapai **persis angka yang diramalkan CV kita sendiri**.
+Jadi 0.667 memang terjangkau — **kita yang tertinggal 0.005**, bukan mereka
+yang mustahil dikejar. Ada defisit modeling nyata sebesar ~2,5 SE yang tidak
+pernah kami sentuh selama 30 hari.
+
+**Catatan penting tentang CV:** OOF penuh kita (0.66686) OPTIMIS +0.00503
+dibanding privat. Holdout tersegel (0.66210) meleset hanya +0.00027 —
+**tepat di level**. Jadi holdout tersegel BUKAN tidak berguna: ia akurat
+untuk memperkirakan LEVEL, hanya tidak bisa dipercaya untuk mengurutkan
+varian yang selisihnya di dalam derau. Saya membuang keduanya sekaligus.
 
 ---
 
-## 4. Daftar periksa untuk lomba berikutnya
+## 3. Yang tetap benar dari versi pertama
 
-### Fase 0 — Kalibrasi instrumen (hari 1–2, SEBELUM modeling)
+### Menyebut 0.966 "anomali" lalu menutup penyelidikannya
+Tetap kesalahan besar, dan sekarang konteksnya lebih jelas: ada DUA jalur
+menuju finalis — (a) menutup defisit modeling 0.005, atau (b) menemukan apa
+yang ditemukan tim 0.96/0.70. Saya menutup jalur (b) lewat vonis "anomali",
+dan tidak pernah serius mengerjakan (a). Dua-duanya terlewat.
+
+> Skor jauh di atas plafon Anda berarti **model plafon Anda salah**. Satu tim
+> bisa keberuntungan; dua tim independen adalah sinyal.
+
+### Mengukur berulang di resolusi yang sudah terbukti buta
+82 eksperimen, mayoritas menguji selisih 0.0003–0.0017 yang di dalam derau.
+Setelah ~5 hasil "noise", pindah ruang pencarian — jangan ukur lebih teliti.
+
+### Mengutip probabilitas yang bersandar pada asumsi terlemah
+Saya sendiri menulis "jumlah tim adalah ketidakpastian yang PALING
+menentukan", tidak mendapatkannya, lalu tetap mengutip P(top-5)=0.37–0.48.
+
+---
+
+## 4. TEMUAN BARU: peringkat publik Anda MENGGELEMBUNG oleh jumlah submission
+
+```
+korelasi (jumlah submission, naik/turun peringkat) = −0.70
+  Raja Batam       18 submission   ▲17
+  timnya abror     27              ▲10
+  Info Loker       28              ▲10
+  Trio Badut       46              ▲ 7
+  Datadataan       51              ▲ 2
+  Dikeri Leon      49              ▼ 2
+  NGEDATAYUK       59              ▼ 2
+  KITA             60              ▼ 6   ← submission terbanyak, jatuh terdalam
+```
+
+Kita punya submission TERBANYAK dan jatuh PALING DALAM. Peringkat publik 7
+itu menggelembung; posisi sejati kita selalu ~13.
+
+Ini TIDAK bertentangan dengan SALAH #2. Dua hal berbeda:
+- Memilih file terbaik **di antara file Anda sendiri** lewat skor publik:
+  **menguntungkan** (+0.00145).
+- Tapi **peringkat publik** Anda naik sebanding jumlah submission, karena
+  maksimum dari banyak undian selalu lebih tinggi. Peringkat itu bukan
+  cerminan kualitas.
+
+> **ATURAN: jangan baca peringkat publik Anda sebagai posisi sejati.
+> Bandingkan setara — lihat jumlah submission tiap tim.** Tim dengan 18
+> submission di posisi 26 lebih kuat dari Anda di posisi 7 dengan 60.
+
+---
+
+## 5. Daftar periksa untuk lomba berikutnya
+
+### Fase 0 — Kalibrasi alat ukur (hari 1–2, SEBELUM modeling)
 1. Kirim baseline sepele dua kali dengan seed berbeda. Selisih skor publiknya
-   = **resolusi alat ukur Anda**. Jangan pernah kejar apa pun di bawah 2×.
-2. **Hitung jumlah tim** di pita derau. Screenshot papan PENUH, mingguan.
-3. Catat pembagian publik/privat. Itu menentukan seberapa besar pengacakan.
+   = resolusi instrumen Anda. Jangan kejar apa pun di bawah 2×.
+2. **Screenshot papan PENUH mingguan**, catat jumlah submission tiap tim.
+   Normalkan peringkat terhadap jumlah submission.
+3. Catat pembagian publik/privat.
 
 ### Fase 1 — Perburuan kebocoran (hari 1–7, SEBELUM model apa pun)
-- [ ] Urutan / pola `id`: apakah train & test berselang-seling? apakah id
-      berkorelasi dengan target?
-- [ ] Timestamp: ada hubungan dengan target?
-- [ ] **Presisi float target**: jitter ±0.05 — apakah pembulatannya
-      membocorkan posisi tangga? (kami temukan strukturnya, tidak pernah
-      mencoba membalikkannya)
-- [ ] Urutan baris file, spasi ekstra, metadata apa pun
-- [ ] **Retrieval train↔test**: cari tetangga terdekat teks mentah. Kalau
-      user test punya kembaran di train, menyalin labelnya bisa besar sekali
-- [ ] **Adversarial validation**: bisakah model membedakan train dari test?
-      Kalau bisa — **KENAPA**? Jawaban "kenapa" itu sering kebocorannya
-- [ ] Membalik proses generasi target (kami tahu tangganya
-      `[1.0,0.85,0.70,0.55,0.40,0.25]` + jitter, K∈{4,5,6}, tepat satu 1.0)
-- [ ] `sample_submission` — isinya trivial atau tidak?
-- [ ] Kolom/berkas yang tidak terpakai sama sekali
+- [ ] Urutan/pola `id`: train & test berselang-seling? id berkorelasi target?
+- [ ] **Presisi float target** — jitter ±0.05, apakah pembulatannya
+      membocorkan posisi tangga? (kami tahu strukturnya, tak pernah dibalik)
+- [ ] **Membalik proses generasi target**: tangga
+      `[1.0,0.85,0.70,0.55,0.40,0.25]`, K∈{4,5,6}, tepat satu 1.0
+- [ ] Retrieval train↔test pada teks mentah (kembaran = salin label)
+- [ ] Adversarial validation — kalau train/test bisa dibedakan, **KENAPA**?
+- [ ] Timestamp, urutan baris, metadata, `sample_submission`, kolom tak terpakai
 
 ### Fase 2 — Model: variasikan STRUKTUR, bukan angka
-Urutan dampak berdasarkan pengalaman lomba ini:
-1. **Struktur kepala meta** (sinyal apa yang masuk Ridge) ← dampak terbesar
-2. **Kerangka masalah** (pointwise / pairwise / listwise) ← listnet menolong
+Urutan dampak terukur dari lomba ini:
+1. **Struktur kepala meta** (sinyal apa yang masuk Ridge) ← terbesar
+2. **Kerangka masalah** (pointwise/pairwise/listwise) ← listnet menolong
 3. Fitur baru ← 25 ide, hampir semua gagal
-4. Encoder teks ← nol (7 representasi semuanya mendarat di pita sama)
-5. Hyperparameter ← nol (dimakan seed bagging, e77)
-6. Jumlah seed ← nol (rata-ratanya datar)
+4. Encoder teks ← NOL (7 representasi mendarat di pita 0.62–0.64 yang sama)
+5. Hyperparameter ← NOL (dimakan seed bagging, e77)
+6. Jumlah seed ← NOL
 
-Kerjakan 1 dan 2 di minggu pertama. Jangan sentuh 5 dan 6 sama sekali.
+Kerjakan 1–2 di minggu pertama. Jangan sentuh 4–6 sama sekali.
 
-### Fase 3 — Disiplin anggaran submission
-- 1 submission = 1 hipotesis berbeda. **Bukan** undian seed.
+**Dan yang paling kurang kami kerjakan: menutup jarak CV→privat.** OOF penuh
+kami optimis +0.005. Kalau CV bilang 0.667 tapi papan bilang 0.662, **jarak
+itu sendiri adalah masalah yang harus dikerjakan** — bukan diabaikan.
+Cari penyebabnya: kebocoran halus di CV, pergeseran distribusi train/test,
+atau skema fold yang terlalu murah hati.
+
+### Fase 3 — Disiplin submission
+- 1 submission = 1 hipotesis berbeda. Bukan undian seed.
 - **Diff setiap file** terhadap semua file lama sebelum kirim — bandingkan
-  **urutan top-5**, bukan ambang nilai mentah (selisih 4e-08 antar lingkungan
-  itu file yang sama).
-- Kalau file benar-benar baru dan slot harian masih ada: **kirim**. Memilih
-  berdasarkan skor publik itu netral secara statistik, jadi biayanya hanya
-  slot, sementara informasinya melampaui tebakan sisi-train apa pun.
-- Sisakan 20% anggaran terakhir untuk menguji keberagaman pasangan final.
+  **urutan top-5**, bukan ambang nilai mentah.
+- File benar-benar baru + slot harian ada → **kirim**. Terukur menguntungkan
+  (+0.00145), bukan netral seperti klaim saya dulu.
 
 ### Fase 4 — Pemilihan 2 slot final
-Pakai ulang matematika ini, terbukti benar:
 ```
 sd_selisih_per_user ≈ 0.0164 + 0.1462 × (1 − kemiripan_top5)
-E[max] − rata      = 0.3989 × sd_selisih_privat
+E[max] − rata       = 0.3989 × sd_selisih_privat
 ```
-Pilih pasangan dengan **kemiripan top-5 terendah** di antara file berkualitas
-setara. Dua file kembar = membuang separuh nilai slot.
+Pilih kemiripan top-5 TERENDAH di antara file berkualitas setara.
+**Tapi kualitas lebih dulu, baru keberagaman** — di lomba ini `v39_dua`
+(privat 0.66203) mengalahkan `v36_lnet` (0.66183) meski kurang beragam.
 
 ### Koordinasi tim
-- Satu orang pemegang penomoran versi. Di lomba ini `v38`/`v39`/`v40`/`v41`
-  bentrok antara anggota, dan file misterius muncul tanpa jejak.
-- Satu log submission bersama: nama file, kode yang menghasilkannya, skor.
-- Satu orang yang bertanggung jawab mencentang 2 slot final.
+- Satu pemegang penomoran versi (v38–v41 bentrok antar anggota di lomba ini).
+- Satu log submission bersama: nama file, kode sumber, skor publik.
+- Satu penanggung jawab mencentang 2 slot final.
 
 ---
 
-## 5. Pelajaran terdalam
+## 6. Pelajaran terdalam
 
-Skor tertinggi 0.96619. Analisis plafon saya bilang 0.667.
+Ada dua jalur ke finalis, dan saya menutup dua-duanya:
 
-Ketika jurang sebesar itu ada, **ini bukan lomba modeling.** Kami memainkan
-permainan modeling selama 30 hari sementara sedikitnya dua tim memainkan
-permainan yang berbeda.
+1. **Menutup defisit modeling 0.005.** Tiga tim normal melakukannya. CV kami
+   sendiri bilang 0.667 terjangkau. Kami menghabiskan 30 hari mengejar
+   0.0005 di dalam derau, bukan 0.005 di luar derau.
+2. **Menemukan struktur yang ditemukan tim 0.96 dan 0.70.** Saya memvonisnya
+   "anomali" di minggu pertama dan tidak pernah meninjau ulang, bahkan
+   setelah tim kedua mengonfirmasinya.
 
-Mengenali permainan mana yang sedang Anda mainkan adalah keputusan dengan
-pengungkit tertinggi di seluruh lomba — dan keputusan itu harus diambil di
-minggu pertama, bukan tidak pernah.
+Kesalahan tunggal yang menyatukan keduanya: **saya memakai model dunia saya
+sendiri sebagai bukti tentang dunia.** Plafon saya bilang 0.667 tidak
+terjangkau — jadi 0.966 saya sebut mustahil. Derau saya bilang semua tim
+seri — jadi defisit 0.005 saya sebut keberuntungan.
+
+Ketika kenyataan bertentangan dengan model Anda, yang salah adalah modelnya.
