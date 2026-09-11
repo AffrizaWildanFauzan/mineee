@@ -47,6 +47,55 @@ ingin dijelaskan. Riset tanpa defisit terukur = membaca, bukan bekerja.
 
 **Alat:** Consensus (pencarian paper), WebSearch untuk survei.
 
+### A2b. Rantai paper → kode, DENGAN GERBANG  (`paper-to-code`)
+Skill `paper-to-code` (di [juanlurg/data-science-claude-skills](https://github.com/juanlurg/data-science-claude-skills))
+mengubah paper jadi notebook implementasi. Berguna — **tapi hanya di
+posisi yang benar dalam urutan.**
+
+**Bukti dari MineToday: empat metode dari paper, netto NOL.**
+```
+ListNet      (Cao dkk. 2007)      LB 0.66113  sedikit positif
+LambdaRank   (Burges dkk. 2006)   LB 0.65862  TERBURUK di keluarga
+MiniLM       (sentence embedding) bobot meta-Ridge 0.000
+IndoBERTweet (BERT Indonesia)     bobot lebih kecil lagi
+```
+Semuanya diimplementasikan dari nol, semuanya benar secara teknis.
+Kegagalannya bukan pada papernya — pada **cara memilihnya**:
+1. Dipilih karena terdengar canggih, bukan karena menutup defisit terukur
+2. Setelan eksperimen papernya tidak menyerupai kami — LambdaRank
+   divalidasi di jutaan kueri; kami 4000 user × 17 item. Metode yang
+   menang di skala besar sering kalah di data kecil
+3. Defisit kami (0.005) ada di Tingkat 1–2, bukan di kecanggihan modeling
+
+**Rantai yang benar — enam langkah, tiap langkah bergerbang:**
+```
+1. GERBANG: sudah ada defisit yang TERUKUR dan TERLOKALISASI?
+   (dari /cv-lb-gap atau ledger eksperimen)
+   belum -> BERHENTI. Jangan baca paper apa pun.
+
+2. nvidia-kaggle-skill: cari di write-up pemenang dulu.
+   Ada yang sudah memecahkan ini? -> pakai itu, selesai.
+
+3. Belum ada di write-up -> baru ke paper.
+   deep-research / Consensus / scientific-thinking-literature-review
+
+4. SARING berdasarkan KEMIRIPAN SETELAN, bukan kebaruan:
+   ukuran data, metrik, jenis data, jumlah kelas/item.
+   Paper yang divalidasi di skala 100x berbeda -> buang.
+
+5. paper-to-code: implementasi versi MINIMAL. Jangan lengkap dulu.
+
+6. GERBANG: uji terhadap /noise-floor, bukan terhadap intuisi.
+   Di bawah 2 x SE -> matikan, catat di ledger, lanjut.
+```
+
+Perhatikan langkah 2 dan 4 — dua-duanya tidak kami lakukan. Langkah 2
+karena kami tidak pernah membaca write-up; langkah 4 karena kami tidak
+pernah bertanya apakah setelan papernya menyerupai kami.
+
+**Posisi dalam urutan: peringkat 7 dari 10.** Itu bukan penghinaan pada
+riset — itu pengakuan bahwa enam hal lain lebih dulu menghasilkan.
+
 ### A3. Membaca aturan & diskusi lomba sebagai sumber intelijen
 Tab Discussion sering memuat: klarifikasi metrik dari panitia, keluhan
 peserta yang membocorkan struktur data, dan kadang petunjuk kebocoran.
@@ -171,7 +220,7 @@ lebih cepat. Di MineToday fan-out akan **memperburuk** hasil.
 | 4 | Memakai struktur target (C1) | 1–2 hari | Sedang–tinggi | struktur diketahui |
 | 5 | Buku eksperimen pra-registrasi (B3) | 1 jam | Sedang | — |
 | 6 | Pseudo-labeling (C2) | 1 hari | Sedang | kurva belajar naik |
-| 7 | Riset paper terarah (A2) | bervariasi | Sedang | ada defisit terukur |
+| 7 | Riset paper terarah + `paper-to-code` (A2, A2b) | bervariasi | Sedang | **defisit terukur + write-up sudah dicek + setelan mirip** |
 | 8 | Pembanding submission (B4) | 1 jam | Sedang | — |
 | 9 | Agregasi peringkat (C3) | 2 jam | Rendah–sedang | metrik peringkat |
 | 10 | Fan-out paralel (D) | besar | Sedang | **T1+T2 selesai** |
