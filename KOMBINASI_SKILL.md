@@ -4,6 +4,86 @@ Disusun dari inventaris ~430 skill terpasang (bawaan Claude Code +
 `academic-research-skills` + `ecc` + plugin lain), dipetakan ke enam
 tingkat prioritas di `STRATEGI.md`.
 
+---
+
+# ⚡ DAFTAR PASANG — langsung pakai
+
+## A. PASANG BARU (3 repo saja)
+```
+juanlurg/data-science-claude-skills   -> experiment-tracker, dataset-doctor,
+                                          auto-eda, paper-to-code
+NVIDIA/SkillSpector                    -> audit sekali jalan atas ~430 skill
+                                          yang sudah terpasang (JALANKAN DULU)
+marky291/claude-drift                  -> opsional; menjaga CLAUDE.md & skill
+                                          tidak melenceng dari kenyataan
+```
+
+## B. AKTIFKAN dari yang sudah ada (~30 skill)
+
+**Disiplin — pasang hari pertama, sekali**
+```
+init  hookify  hookify-configure  hookify-rules  skill-create
+recursive-decision-ledger  quality-gate
+save-session  resume-session  sessions  checkpoint  context-budget
+```
+
+**Higiene skill — jalankan SEBELUM yang lain**
+```
+skill-stocktake  skill-health  prune  config-gc
+```
+
+**Lomba (minggu 1–3)**
+```
+nvidia-kaggle-skill        <- write-up pemenang, konteks lomba, submit
+recsys-pipeline-architect  <- kalau tugasnya rekomendasi/ranking
+mle-workflow  benchmark-methodology  pytorch-patterns
+```
+
+**Riset (minggu 1)**
+```
+deep-research  search-first  exa-search
+scientific-thinking-literature-review  regex-vs-llm-structured-text
+```
+
+**Kualitas kode — sebelum tiap run besar**
+```
+code-review  python-review  python-testing
+```
+
+**Keluaran & tim**
+```
+dataviz  dashboard-builder  xlsx
+```
+
+**Babak final (kalau lolos)**
+```
+pptx  docx  presenting-conference-talks  academic-plotting  ml-paper-writing
+```
+
+## C. MATIKAN (~400 skill)
+Seluruh kategori: frontend, mobile/desktop, devops/infra, network/homelab,
+security (kecuali lombanya di bidang itu), healthcare, bisnis/konten,
+operasi/logistik, media, blockchain/defi, meta-codebase yang tidak dipakai.
+Itu hanya menambah kebisingan pemicuan.
+
+## D. BANGUN SENDIRI (6 skill, tidak ada padanannya)
+```
+/noise-floor   /leak-hunt   /cv-lb-gap
+/sub-diff      /final-slots /lb-snapshot
+```
+
+## Urutan eksekusi
+```
+1. SkillSpector  -> audit 430 skill yang sudah ada
+2. skill-stocktake -> prune -> config-gc   -> pangkas ke ~30
+3. pasang data-science-claude-skills
+4. init + hookify + recursive-decision-ledger   -> tumpukan disiplin
+5. bangun 6 skill kustom
+6. baru mulai lomba
+```
+
+---
+
 > **Dua peringatan yang harus dibaca dulu.**
 >
 > **(1) 430+ skill aktif itu LIABILITAS, bukan aset.** Semakin banyak skill
