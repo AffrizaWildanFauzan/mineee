@@ -80,6 +80,59 @@ Kalau salah satu jawabannya "tidak tahu", ukur dulu — jangan kode dulu.
 - Komentar kode dan penjelasan: **bahasa Indonesia**.
 - Setiap klaim angka: sebutkan dari mana angkanya, atau bilang belum diukur.
 
+## Apakah `skillOverrides` bisa dimasukkan ke prompt ini?
+
+**Daftarnya bisa. Mekanismenya tidak.** Ini bukan soal teknis kecil — ia
+mengubah cara menulisnya.
+
+`skillOverrides` dibaca oleh harness **sebelum** model dijalankan; ia
+menentukan apa yang disuntikkan. Prompt dibaca oleh model **sesudah**
+penyuntikan. Jadi menempelkan blok JSON-nya ke prompt tidak mematikan apa
+pun — blok itu jadi teks biasa yang dibaca model sebagai permintaan. Efeknya
+ada, tapi berupa arahan lunak, bukan penyaringan.
+
+### Yang SALAH: menempelkan blok JSON-nya
+
+````
+{ "skillOverrides": { "ecc:tailwind-audit": "off", ... 430 entri ... } }
+````
+
+Tiga alasan ini justru merugikan:
+
+1. **Bayar konteks dua kali.** Daftar ~430 deskripsi sudah disuntikkan; Anda
+   menambah ~430 nama lagi. Tujuannya menghemat konteks, hasilnya sebaliknya.
+2. **Menyebut nama membuatnya makin menonjol, bukan makin tersembunyi.**
+   Larangan yang menyebut nama justru menarik perhatian ke nama itu.
+3. **Modelnya tidak punya tombol itu.** Model tidak bisa menghapus dirinya
+   dari daftar yang sudah disuntikkan. Yang bisa dilakukannya hanya tidak
+   memanggil.
+
+### Yang BENAR: whitelist positif dan pendek
+
+Sebutkan hanya yang dipakai, jangan sebut yang tidak. Ini bentuk prompt-nya:
+
+> Untuk repo ini hanya tujuh skill yang relevan: `leak-hunt`, `noise-floor`,
+> `sub-diff`, `cv-lb-gap`, `lb-snapshot`, `final-slots`, `skill-creator`.
+> Jangan memanggil skill di luar tujuh itu kecuali saya menyebut namanya
+> secara eksplisit. Kalau ragu skill mana yang cocok, jangan memanggil apa
+> pun — tanya saya dulu.
+
+Tujuh nama, bukan 430. Itu sudah semua yang bisa dilakukan lewat prompt, dan
+sudah termuat di bagian **ATURAN SKILL UNTUK SESI INI** di atas.
+
+### Pembagian kerja yang benar
+
+| | ditulis di mana | kenapa di situ |
+|---|---|---|
+| daftar ~430 yang diredam | `.claude/settings.json` | satu-satunya yang mengurangi penyuntikan |
+| whitelist 7 yang dipakai | prompt / `CLAUDE.md` | pendek, positif, portabel |
+| urutan + gerbang + larangan | prompt / `CLAUDE.md` | tidak ada tempatnya di konfigurasi |
+
+Kalau Anda memang **tidak punya akses** `settings.json` (misalnya di
+claude.ai), whitelist positif di prompt saja sudah cukup berguna — Anda
+kehilangan penghematan konteks, tapi tetap dapat pengarahannya. Yang tidak
+berguna dalam keadaan apa pun: menempelkan 430 entri `"off"` ke prompt.
+
 ---
 
 ## Catatan jujur: apa yang prompt ini BISA dan TIDAK BISA
