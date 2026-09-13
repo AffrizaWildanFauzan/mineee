@@ -28,12 +28,29 @@ yang dihitung skrip ini.
 
 ```bash
 python scripts/final_slots.py "submission_*.csv" \
-  --skor submission_v29_a.csv=0.66118 submission_v36_lnet.csv=0.66113 \
-  --id-col user_id -k 5 --n-privat 690
+  --skor subA.csv=0.66118 subB.csv=0.66113 subC.csv=0.66045 \
+  --sd-dari-skor --n-publik 310 --n-privat 690 --metrik ranking
 ```
 
+Format submission dideteksi otomatis (tunggal / lebar / panjang), kolom id
+juga. `--n-privat` wajib karena derau menskala dengan `1/sqrt(n)`.
+
+### Menerjemahkan keberagaman jadi sd — tiga cara
+
+Keberagaman diukur langsung dari file (bebas asumsi). Tapi mengubahnya jadi
+"sd selisih skor" butuh satu konstanta skala yang bergantung metrik dan
+dataset. Dari yang paling bisa dipercaya:
+
+1. **`--sd-dari-skor`** — dikalibrasi dari sebaran skor file Anda sendiri.
+   Butuh minimal 3 skor. **Pakai ini kalau bisa.**
+2. **`--skala S`** — kalau Anda sudah tahu angkanya dari lomba ini.
+3. **bawaan per keluarga metrik** — perkiraan kasar
+   (`ranking` 0.16, `biner` 0.35, `multikelas` 0.45). Untuk `regresi` tidak
+   ada bawaan; skrip akan bilang begitu dan mengurutkan murni berdasarkan
+   keberagaman — yang tetap berguna.
+
 `--skor` boleh sebagian; file tanpa skor dianggap berkualitas rata-rata.
-Tanpa `--skor` sama sekali, peringkatnya murni berdasarkan keberagaman.
+Tanpa `--skor`, peringkatnya murni berdasarkan keberagaman.
 
 ## Angka mana yang bisa dipercaya
 
@@ -46,11 +63,9 @@ sampling. Bawaan skrip menyusutkannya ke 31% — turunan dari pembagian
 lomba Anda berbeda: `fraksi = n_publik / (n_publik + n_privat)` adalah
 titik awal yang masuk akal.
 
-**Kalibrasi sd dari kemiripan** (`sd ≈ 0.0164 + 0.1462 × (1 − kemiripan)`)
-diukur di satu lomba dengan NDCG@5 dan R² = 0.983. **Ini spesifik metrik
-dan dataset.** Kalau Anda punya prediksi out-of-fold, jauh lebih baik
-menghitung sd selisih per-baris secara langsung daripada memakai kalibrasi
-bawaan ini.
+**Kolom E[max]: perlakukan sebagai pengurut, bukan ramalan skor.** Ia
+bergantung pada skala dan penyusutan, yang keduanya perkiraan. Urutan
+pasangannya jauh lebih stabil daripada angka absolutnya.
 
 ## Kesalahan yang sering terjadi
 

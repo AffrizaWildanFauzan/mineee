@@ -20,14 +20,32 @@ menghasilkan urutan top-5 identik untuk 100% baris, meski selisih nilainya
 ## Cara pakai
 
 ```bash
-python scripts/sub_diff.py submission_baru.csv "submission_*.csv" --id-col user_id -k 5
+python scripts/sub_diff.py submission_baru.csv "submission_*.csv" --metrik ranking
 ```
 
-- `--id-col` kolom pengenal baris (default `user_id`)
-- `-k` berapa item teratas yang dinilai metriknya (NDCG@5 → `-k 5`)
-- `--mirip` ambang peringatan "sangat mirip" (default 0.98)
-
+Kolom id dideteksi otomatis (`id`, `row_id`, `*_id`, atau kolom pertama).
 Kode keluar `1` kalau duplikat ditemukan, jadi bisa dipasang di hook.
+
+### Format submission — dideteksi otomatis
+
+| format | bentuk | dibandingkan lewat |
+|---|---|---|
+| TUNGGAL | `id,target` | peringkat (Spearman) + nilai |
+| LEBAR | `id,c1,...,cN` | urutan top-K per baris + argmax |
+| PANJANG | `id,item,score` | dipivot dulu, lalu seperti LEBAR |
+
+### Sebutkan metriknya — ini yang menentukan arti "duplikat"
+
+| `--metrik` | untuk | duplikat kalau |
+|---|---|---|
+| `ranking` | NDCG, MAP, MRR, AUC | urutannya identik |
+| `nilai` | RMSE, MAE, LogLoss | nilainya identik |
+| `ambang` | akurasi, F1 (+`--ambang 0.5`) | keputusannya identik |
+| `auto` (bawaan) | belum tahu | semua sudut pandang dilaporkan |
+
+Ini penting: dua file dengan selisih nilai 1e-9 adalah **duplikat** di bawah
+metrik peringkat (urutannya sama persis) tapi **bukan** duplikat di bawah
+RMSE (skornya beda, walau sangat sedikit). Sebutkan metriknya kalau tahu.
 
 ## Cara membaca hasilnya
 
@@ -53,8 +71,12 @@ sebagai hook `Stop` atau `PostToolUse` yang menolak menyelesaikan giliran
 kalau ada `submission_*.csv` baru yang belum diperiksa. Disiplin yang
 diingat-ingat akan dilanggar; disiplin yang ditegakkan mesin tidak.
 
-## Kalau kolomnya bukan angka semua
+## Batasan
 
-Skrip memakai seluruh kolom numerik selain kolom id. Untuk submission yang
-formatnya `id,prediksi` tunggal (bukan matriks), urutan top-K tidak bermakna
-— pakai perbandingan nilai biasa, dan skill ini tidak menolong.
+Kolom yang dibandingkan adalah seluruh kolom numerik selain id. Kalau
+submission Anda punya kolom numerik yang BUKAN prediksi, sebutkan
+`--id-col` dengan benar atau buang kolom itu dulu.
+
+Perbandingan hanya dilakukan antar file yang bentuk dan kunci barisnya
+cocok. File dengan jumlah baris berbeda dilewati diam-diam — kalau semua
+file terlewat, periksa `--id-col`.

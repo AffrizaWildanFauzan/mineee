@@ -40,6 +40,8 @@ def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("data", help="JSON atau CSV: nama, skor_cv, skor_papan")
+    p.add_argument("--kecil-lebih-baik", action="store_true",
+                   help="untuk RMSE/MAE/LogLoss dsb, di mana skor rendah = lebih baik")
     p.add_argument("--se", type=float, default=None,
                    help="SE selisih di papan (dari /noise-floor). "
                         "Dipakai untuk menilai apakah jaraknya berarti.")
@@ -53,14 +55,16 @@ def main():
     cv = np.array([r[1] for r in rows])
     lb = np.array([r[2] for r in rows])
 
+    tanda = -1.0 if a.kecil_lebih_baik else 1.0
     level = float(lb.mean() - cv.mean())
     kem, itc = np.polyfit(cv, lb, 1)
     kor = float(np.corrcoef(cv, lb)[0, 1])
     rk = float(np.corrcoef(np.argsort(np.argsort(cv)), np.argsort(np.argsort(lb)))[0, 1])
 
-    print(f"{len(rows)} pasang (CV, papan)\n")
+    print(f"{len(rows)} pasang (CV, papan)"
+          + ("   [metrik: kecil lebih baik]\n" if a.kecil_lebih_baik else "\n"))
     print(f"{'model':34s} {'CV':>10} {'papan':>10} {'selisih':>10}")
-    for n, c, l in sorted(rows, key=lambda r: -r[2]):
+    for n, c, l in sorted(rows, key=lambda r: -tanda * r[2]):
         print(f"{n[:34]:34s} {c:10.5f} {l:10.5f} {l-c:+10.5f}")
 
     print(f"\n  LEVEL      rata(papan) - rata(CV) = {level:+.5f}")
@@ -74,7 +78,7 @@ def main():
     print(f"  ambang pembanding: {amb:.5f}  ({src})")
 
     if abs(level) > 2 * amb:
-        arah = "OPTIMIS" if level < 0 else "PESIMIS"
+        arah = "OPTIMIS" if level * tanda < 0 else "PESIMIS"
         print(f"\n  [!] CV Anda {arah} sebesar {abs(level):.5f} = {abs(level)/amb:.1f}x ambang.")
         print("      Ini bukan sekadar kalibrasi -- ini masalah yang harus dikerjakan.")
         print("      Periksa berurutan:")

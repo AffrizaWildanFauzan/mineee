@@ -67,6 +67,11 @@ sesuatu; tim yang stagnan dengan banyak submission sedang menambang derau.
 
 Simpan dengan `--simpan`, dan bandingkan antar minggu.
 
+## Metrik yang makin kecil makin baik
+
+Untuk RMSE, MAE, LogLoss dan sejenisnya, tambahkan `--kecil-lebih-baik`.
+Tanpa itu urutan papan akan terbalik.
+
 ## Batasan
 
 Koreksi bonus seleksi mengasumsikan tiap tim mengambil maksimum dari

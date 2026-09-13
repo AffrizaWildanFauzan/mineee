@@ -36,6 +36,8 @@ def main():
     p.add_argument("--se", type=float, default=None,
                    help="SE selisih antar tim (dari /noise-floor)")
     p.add_argument("--slot-finalis", type=int, default=5)
+    p.add_argument("--kecil-lebih-baik", action="store_true",
+                   help="untuk RMSE/MAE/LogLoss dsb, di mana skor rendah = lebih baik")
     p.add_argument("--simpan", default=None, help="direktori untuk arsip snapshot")
     a = p.parse_args()
 
@@ -43,7 +45,8 @@ def main():
     if not rows:
         print("Tidak ada baris terbaca. Format: nama_tim, skor, jumlah_submission")
         return 1
-    rows.sort(key=lambda r: -r["skor"])
+    tanda = -1.0 if a.kecil_lebih_baik else 1.0
+    rows.sort(key=lambda r: -tanda * r["skor"])
     for i, r in enumerate(rows, 1):
         r["peringkat"] = i
 
@@ -53,17 +56,18 @@ def main():
     # koreksi kasar: skor yg terlihat ~ kualitas + sd*sqrt(2 ln n_sub)
     if a.se:
         bonus = a.se * np.sqrt(2 * np.log(np.maximum(n, 2)))
-        adj = s - bonus
+        adj = s - tanda * bonus
     else:
         adj = s.copy()
         bonus = np.zeros_like(s)
-    ord_adj = np.argsort(-adj)
+    ord_adj = np.argsort(-tanda * adj)
     for pos, idx in enumerate(ord_adj, 1):
         rows[idx]["peringkat_adj"] = pos
         rows[idx]["skor_adj"] = float(adj[idx])
         rows[idx]["bonus_seleksi"] = float(bonus[idx])
 
-    print(f"Papan: {len(rows)} tim\n")
+    print(f"Papan: {len(rows)} tim"
+          + ("   [metrik: kecil lebih baik]\n" if a.kecil_lebih_baik else "\n"))
     hdr = f"{'#':>3} {'tim':26s} {'skor':>9} {'sub':>5}"
     if a.se:
         hdr += f" {'bonus':>9} {'skor adj':>10} {'# adj':>6}"
@@ -88,7 +92,7 @@ def main():
         me = next((r for r in rows if r["tim"] == a.kita), None)
         if me:
             amb = rows[min(a.slot_finalis, len(rows)) - 1]["skor"]
-            d = amb - me["skor"]
+            d = tanda * (amb - me["skor"])
             print(f"\nAnda: peringkat {me['peringkat']} dari {len(rows)}, "
                   f"{me['n_sub']} submission")
             print(f"Ambang top-{a.slot_finalis}: {amb:.5f}  (jarak {d:+.5f})")

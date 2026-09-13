@@ -69,3 +69,8 @@ letaknya di alat ukur, bukan di model.
 Setiap kali Anda mengubah skema validasi, menambah data, atau setelah
 setiap 5 submission berikutnya. Jaraknya bisa berubah — dan perubahannya
 sendiri informatif.
+
+## Metrik yang makin kecil makin baik
+
+Untuk RMSE, MAE, LogLoss dan sejenisnya, tambahkan `--kecil-lebih-baik`.
+Tanpa itu arah "optimis" dan "pesimis" akan terbalik.
