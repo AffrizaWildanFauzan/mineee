@@ -500,6 +500,32 @@ daftarnya. Pangkas dulu, jangan utak-atik anggarannya.
 - `.claude/settings.json` — contoh nyata: enam skill custom `"on"`
 - `dist-skills/gen_skill_overrides.py` — pembangkit `skillOverrides`
 
+## Tiga mekanisme, jangan dicampur
+
+Pertanyaan "bisa nggak pakai prompt.md saja" sebenarnya dua masalah berbeda:
+
+| Masalah | prompt.md / CLAUDE.md | `skillOverrides` | slash command |
+|---|---|---|---|
+| konteks habis dipakai daftar ~430 skill | **tidak** | **ya** | tidak |
+| skill yang salah ikut kepanggil | sebagian (membiaskan) | **ya** (mematikan) | — |
+| urutan tahap & gerbang keputusan | **ya** | tidak | **ya**, deterministik |
+| larangan spesifik lomba, dengan alasan | **ya** | tidak | ya |
+| portabel ke chat tanpa akses settings | **ya** | tidak | tidak |
+
+Alasan prompt tidak bisa menghemat konteks: deskripsi skill sudah disuntikkan
+**sebelum** prompt terbaca. Dan karena deskripsi skill sendiri berisi pemicu
+("Pakai skill ini ketika ..."), larangan di prompt hanya membiaskan — tidak
+mematikan. `"user-invocable-only"` mematikannya secara mekanis.
+
+**Pakai ketiganya, masing-masing untuk tugasnya:**
+- `.claude/settings.json` -> hemat konteks + matikan yang tidak relevan
+- `CLAUDE.md` (dari `PROMPT_LOMBA.md`) -> urutan, gerbang, larangan
+- `.claude/commands/lomba.md` -> jalankan tahap secara deterministik
+
+Berkas di repo ini:
+- `PROMPT_LOMBA.md` — tempel ke chat mana pun, atau salin jadi `CLAUDE.md`
+- `.claude/commands/lomba.md` — `/lomba mulai | submit | mingguan | final`
+
 ---
 
 ## Dokumen terkait
@@ -507,3 +533,4 @@ daftarnya. Pangkas dulu, jangan utak-atik anggarannya.
 - `STRATEGI_LANJUTAN.md` — alur kerja majemuk riset + kode + otomasi
 - `STRATEGI_TANPA_KODE.md` — lapisan proses, hooks, papan kendali tim
 - `POSTMORTEM.md` — apa yang salah di MineToday, dengan angka
+- `PROMPT_LOMBA.md` — pengarah skill: tempel ke chat, atau jadikan `CLAUDE.md`
