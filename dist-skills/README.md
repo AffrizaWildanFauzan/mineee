@@ -2,7 +2,40 @@
 
 Enam file `.skill` — masing-masing berisi `SKILL.md` dan skripnya.
 
-## Cara memasang
+## Pemasangan otomatis
+
+```bash
+bash install.sh          # audit keamanan + pasang 6 skill + cek kebutuhan
+bash install.sh audit    # hanya audit SkillSpector
+bash install.sh skills   # hanya pasang 6 skill
+bash install.sh deps     # hanya cek numpy/pandas/sklearn
+```
+
+Skrip memasang ke `~/.claude/skills/` (ubah dengan `CLAUDE_SKILLS_DIR`).
+
+**Skrip hanya mengerjakan bagian bash.** Dua plugin dipasang lewat slash
+command DI DALAM Claude Code:
+
+```
+# pangkas dulu -- sebelum menambah apa pun
+/skill-stocktake
+/skill-health
+/prune
+/config-gc
+
+# satu-satunya pemasangan plugin baru yang direkomendasikan
+/plugin marketplace add juanlurg/data-science-claude-skills
+/plugin install data-science@data-science-claude-skills
+
+# opsional
+/plugin marketplace add marky291/ClaudeDrift
+/plugin install claude-drift
+```
+
+Urutannya penting: **audit → pangkas → baru pasang.** Memasang ke
+tumpukan 430 skill membuat yang baru sulit terpicu.
+
+## Cara memasang (manual)
 
 **Lewat kartu file di chat**: klik tombol **Save skill** pada kartu file
 `.skill` yang dikirimkan. Skill langsung terpasang ke profil Anda dan
