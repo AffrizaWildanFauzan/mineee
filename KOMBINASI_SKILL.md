@@ -398,6 +398,110 @@ menolak ide di bawah ambang derau.
 
 ---
 
+# 🎚️ MENYARING SKILL — hanya beberapa yang aktif dari ~430
+
+Masalahnya nyata: tiap skill terpasang ikut terdaftar ke model (nama +
+deskripsi) setiap percakapan. Dengan ~430 skill, sebagian besar tidak relevan
+untuk satu lomba, tapi tetap memakan jatah konteks dan menarik perhatian
+model ke arah yang salah. Solusinya **bukan** mencabut plugin — cukup
+diredam per-proyek.
+
+## Tiga tuas, dari kasar ke halus
+
+| Tuas | Cakupan | Untuk apa |
+|---|---|---|
+| `enabledPlugins` | seluruh plugin | matikan satu plugin sekaligus (paling murah) |
+| `skillOverrides` | satu skill | redam/aktifkan skill per nama |
+| `disableBundledSkills` | skill bawaan Claude Code | jarang dipakai, biasanya rugi |
+
+### `skillOverrides` — empat nilai, pahami bedanya
+```json
+{
+  "skillOverrides": {
+    "noise-floor":          "on",
+    "anthropic-skills:pptx": "user-invocable-only",
+    "ecc:tailwind-audit":    "name-only",
+    "some:plugin-skill":     "off"
+  }
+}
+```
+- `"on"` — normal, model melihat nama + deskripsi
+- `"name-only"` — terdaftar tanpa deskripsi; hemat konteks, masih terlihat
+- `"user-invocable-only"` — **hilang dari mata model, `/nama` tetap jalan**
+- `"off"` — hilang dari model dan dari `/nama`
+
+**Default yang saya sarankan untuk lomba: `user-invocable-only`.** Konteks
+bersih, tapi tidak ada skill yang benar-benar hilang kalau ternyata
+dibutuhkan mendadak jam 2 pagi. `"off"` hanya untuk skill yang jelas
+mengganggu.
+
+### `enabledPlugins` — matikan borongan
+```json
+{ "enabledPlugins": { "ecc@claude-code-marketplace": false } }
+```
+Kalau satu plugin isinya 40 skill dan tidak satu pun relevan, satu baris ini
+mengalahkan 40 baris `skillOverrides`.
+
+## Tempatkan di berkas yang benar
+
+| Berkas | Cakupan | Git | Pakai untuk |
+|---|---|---|---|
+| `~/.claude/settings.json` | semua proyek | — | preferensi pribadi global |
+| `.claude/settings.json` | repo ini | **commit** | konfigurasi tim satu lomba |
+| `.claude/settings.local.json` | repo ini | gitignore | penimpaan pribadi |
+
+Urutan presedensi: **user < project < local < flag < policy.**
+
+Konsekuensi yang mudah bikin bingung: kalau `.claude/settings.json` (project,
+dikomit tim) **menghidupkan** sesuatu dan Anda pribadi ingin mematikannya,
+menulis `false` di `~/.claude/settings.json` **tidak akan berpengaruh** —
+project menang atas user. Yang benar: `.claude/settings.local.json`.
+
+Karena cakupannya per-proyek, konfigurasi lomba A tidak mengganggu proyek
+lain. Ini alasan utama menaruhnya di repo lomba, bukan di global.
+
+## Alur praktis di awal lomba berikutnya
+
+```bash
+# 1) di Claude Code: /skills  -> salin seluruh daftar ke inventaris.txt
+
+# 2) tulis yang mau dipakai (boleh glob)
+cat > whitelist.txt <<'EOF'
+noise-floor
+sub-diff
+final-slots
+cv-lb-gap
+lb-snapshot
+leak-hunt
+data-science:*
+academic-research:literature-review
+EOF
+
+# 3) hasilkan blok skillOverrides
+python3 dist-skills/gen_skill_overrides.py inventaris.txt whitelist.txt \
+    --sisanya user-invocable-only --keluar overrides.json
+
+# 4) gabungkan kuncinya ke .claude/settings.json di repo lomba
+#    (GABUNGKAN, jangan timpa berkas yang sudah ada)
+```
+
+Skrip mencetak ringkasan ke stderr — berapa aktif, berapa diredam, dan
+memperingatkan pola whitelist yang tidak cocok apa pun (biasanya berarti nama
+skill salah tulis).
+
+## Catatan ukuran konteks
+- `skillListingMaxDescChars` — batas panjang deskripsi per skill (bawaan 1536)
+- `skillListingBudgetFraction` — porsi konteks untuk daftar skill (bawaan 0.01)
+
+Menaikkan/menurunkan dua angka ini jauh kurang berguna daripada memangkas
+daftarnya. Pangkas dulu, jangan utak-atik anggarannya.
+
+## Yang sudah ada di repo ini
+- `.claude/settings.json` — contoh nyata: enam skill custom `"on"`
+- `dist-skills/gen_skill_overrides.py` — pembangkit `skillOverrides`
+
+---
+
 ## Dokumen terkait
 - `STRATEGI.md` — enam tingkat prioritas + jadwal 30 hari
 - `STRATEGI_LANJUTAN.md` — alur kerja majemuk riset + kode + otomasi
