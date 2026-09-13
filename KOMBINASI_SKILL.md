@@ -500,6 +500,24 @@ daftarnya. Pangkas dulu, jangan utak-atik anggarannya.
 - `.claude/settings.json` — contoh nyata: enam skill custom `"on"`
 - `dist-skills/gen_skill_overrides.py` — pembangkit `skillOverrides`
 
+### Contoh nyata: enam skill terdaftar dua kali
+
+Di sesi pengembangan ini, daftar skill memuat `sub-diff` **dan**
+`anthropic-skills:sub-diff` — begitu juga lima skill custom lainnya. Sebabnya
+ada dua salinan: salinan proyek di `.claude/skills/` (yang dikembangkan) dan
+salinan profil hasil pemasangan `.skill`. Enam deskripsi panjang terbayar dua
+kali tanpa manfaat, dan model bisa memanggil salinan yang salah.
+
+`.claude/settings.json` di repo ini meredam salinan profilnya:
+
+```json
+"anthropic-skills:sub-diff": "user-invocable-only"
+```
+
+**Perhatikan arahnya terbalik di repo lomba berikutnya.** Di sana salinan
+proyek tidak ada — yang dipakai justru salinan profil. Jadi jangan menyalin
+blok ini apa adanya; yang diredam adalah salinan yang *tidak* Anda kembangkan.
+
 ## Tiga mekanisme, jangan dicampur
 
 Pertanyaan "bisa nggak pakai prompt.md saja" sebenarnya dua masalah berbeda:

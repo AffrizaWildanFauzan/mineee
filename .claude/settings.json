@@ -7,7 +7,13 @@
     "final-slots": "on",
     "cv-lb-gap": "on",
     "lb-snapshot": "on",
-    "leak-hunt": "on"
+    "leak-hunt": "on",
+    "anthropic-skills:noise-floor": "user-invocable-only",
+    "anthropic-skills:sub-diff": "user-invocable-only",
+    "anthropic-skills:final-slots": "user-invocable-only",
+    "anthropic-skills:cv-lb-gap": "user-invocable-only",
+    "anthropic-skills:lb-snapshot": "user-invocable-only",
+    "anthropic-skills:leak-hunt": "user-invocable-only"
   },
   "skillListingBudgetFraction": 0.01
 }
