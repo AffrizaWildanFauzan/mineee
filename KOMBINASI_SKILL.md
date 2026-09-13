@@ -8,15 +8,28 @@ tingkat prioritas di `STRATEGI.md`.
 
 # ⚡ DAFTAR PASANG — langsung pakai
 
-## A. PASANG BARU (3 repo saja)
+## A. PASANG BARU — hanya SATU plugin berkelanjutan
 ```
-juanlurg/data-science-claude-skills   -> experiment-tracker, dataset-doctor,
-                                          auto-eda, paper-to-code
-NVIDIA/SkillSpector                    -> audit sekali jalan atas ~430 skill
-                                          yang sudah terpasang (JALANKAN DULU)
-marky291/claude-drift                  -> opsional; menjaga CLAUDE.md & skill
-                                          tidak melenceng dari kenyataan
+juanlurg/data-science-claude-skills   <- SATU-SATUNYA pemasangan baru
+   experiment-tracker  catat & bandingkan eksperimen, punya leaderboard internal
+   dataset-doctor      skor kesehatan data, kebocoran, drift, imbalance
+   auto-eda            EDA naratif
+   paper-to-code       paper -> notebook implementasi
 ```
+
+Dua lagi, tapi BUKAN plugin berkelanjutan:
+```
+NVIDIA/SkillSpector    alat SEKALI PAKAI -- audit keamanan 430 skill yang
+                       sudah terpasang, lalu selesai. JALANKAN PALING DULU.
+marky291/claude-drift  opsional -- berguna kalau CLAUDE.md sering berubah;
+                       lewati kalau tidak.
+```
+
+Sudah Anda punya dan tinggal dipakai: `nvidia-kaggle-skill` (telaah
+write-up pemenang = aktivitas ROI tertinggi).
+
+Sudah terpasang di profil: keenam skill kustom (`noise-floor`, `leak-hunt`,
+`cv-lb-gap`, `sub-diff`, `final-slots`, `lb-snapshot`).
 
 ## B. AKTIFKAN dari yang sudah ada (~30 skill)
 
@@ -66,19 +79,22 @@ security (kecuali lombanya di bidang itu), healthcare, bisnis/konten,
 operasi/logistik, media, blockchain/defi, meta-codebase yang tidak dipakai.
 Itu hanya menambah kebisingan pemicuan.
 
-## D. BANGUN SENDIRI (6 skill, tidak ada padanannya)
+## D. BANGUN SENDIRI — SUDAH SELESAI
 ```
 /noise-floor   /leak-hunt   /cv-lb-gap
 /sub-diff      /final-slots /lb-snapshot
 ```
+Keenamnya sudah dibangun, diuji pada 4 format submission dan 2 arah
+metrik, dan terpasang ke profil. Sumbernya di `.claude/skills/`,
+paketnya di `dist-skills/`.
 
 ## Urutan eksekusi
 ```
 1. SkillSpector  -> audit 430 skill yang sudah ada
-2. skill-stocktake -> prune -> config-gc   -> pangkas ke ~30
-3. pasang data-science-claude-skills
+2. skill-stocktake -> prune -> config-gc   -> pangkas ke ~25
+3. pasang data-science-claude-skills        <- satu-satunya pemasangan baru
 4. init + hookify + recursive-decision-ledger   -> tumpukan disiplin
-5. bangun 6 skill kustom
+5. [SELESAI] 6 skill kustom sudah terpasang
 6. baru mulai lomba
 ```
 
@@ -253,9 +269,9 @@ di semua sel. Keduanya kuat di *riset & alur kerja*, kosong di
 | Repo / alat | Isi | Menutup celah mana |
 |---|---|---|
 | [juanlurg/data-science-claude-skills](https://github.com/juanlurg/data-science-claude-skills) | `dataset-doctor` (skor kesehatan data, deteksi kebocoran, drift, imbalance, multikolinearitas), `experiment-tracker` (**catat & bandingkan eksperimen ML lokal, punya leaderboard internal**), `auto-eda`, `paper-to-code`, `sql-optimizer` | sebagian `/leak-hunt`, sebagian `/cv-lb-gap`; `experiment-tracker` = ledger eksperimen |
-| [borghei/Claude-Skills](https://github.com/borghei/Claude-Skills) | koleksi skill data-analytics termasuk `data-scientist` | pendukung Tingkat 1 |
-| [MLWave/Kaggle-Ensemble-Guide](https://github.com/MLWave/Kaggle-Ensemble-Guide) | kode ensembling klasik: rank averaging, voting, blending | bahan mentah `/final-slots` |
-| [kyaiooiayk/Kaggle-Competitions-Analysis](https://github.com/kyaiooiayk/Kaggle-Competitions-Analysis) | kompendium metode solusi terkenal lintas lomba | bahan Rantai A |
+| ~~[borghei/Claude-Skills](https://github.com/borghei/Claude-Skills)~~ **BATAL** | Diperiksa langsung: **368 skill bisnis/engineering** (project management, marketing, compliance, C-level advisory). **Nol** untuk lomba data science. Memasangnya justru memperparah masalah kebisingan pemicuan. | — |
+| ~~[MLWave/Kaggle-Ensemble-Guide](https://github.com/MLWave/Kaggle-Ensemble-Guide)~~ **bukan plugin** | Repo kode dari ~2015, bukan skill. Isinya rank averaging & voting — beberapa baris yang sudah tercakup `/final-slots`. Baca sekali kalau penasaran, jangan dipasang. | — |
+| [kyaiooiayk/Kaggle-Competitions-Analysis](https://github.com/kyaiooiayk/Kaggle-Competitions-Analysis) | kompendium metode solusi lintas lomba — **bahan bacaan**, bukan plugin | bahan Rantai A |
 | ~~[LeakageDetector](https://arxiv.org/pdf/2503.14723)~~ **TIDAK PERLU** | plugin PyCharm untuk kebocoran level KODE. Celahnya nyata, tapi Anda tidak pakai PyCharm — dan `code-review` bawaan Claude Code mengerjakannya lebih baik karena memahami konteks. Daftar periksa 7 polanya sudah dimasukkan ke `/cv-lb-gap`. | — |
 
 **Dua yang layak dipasang meski bukan untuk lomba:**
