@@ -46,6 +46,41 @@ melebihi 2× ambang, periksa berurutan:
 4. **Pergeseran distribusi** — jalankan adversarial validation, lihat
    fitur mana yang paling membedakan train dari test.
 
+### Memeriksa kebocoran level KODE
+
+Kalau LEVEL menunjukkan CV optimis, penyebab tersering ada di kode
+pipeline, bukan di data. Ini berbeda dari `/leak-hunt`, yang memindai
+dataset — di sini yang dibaca adalah kode Anda sendiri.
+
+Jalankan `code-review` pada skrip pipeline Anda dengan instruksi mencari
+tujuh pola ini. Semuanya membuat CV optimis dan tidak satu pun
+menghasilkan error, jadi tidak akan ketahuan tanpa dicari:
+
+```
+[ ] scaler / encoder / imputer di-fit pada SELURUH data lalu baru displit
+    (StandardScaler().fit(X) sebelum KFold -- statistik fold validasi
+     ikut masuk ke transformasinya)
+[ ] target encoding dihitung di seluruh train tanpa out-of-fold
+[ ] seleksi fitur memakai target dari seluruh data sebelum split
+[ ] resampling (SMOTE, undersampling) dilakukan SEBELUM split
+    -> baris sintetis dari fold validasi bocor ke train
+[ ] KFold acak padahal datanya punya struktur waktu
+    -> model "melihat masa depan"
+[ ] baris dari entitas yang sama (user, pasien, perangkat) ada di train
+    DAN valid -> perlu GroupKFold
+[ ] normalisasi memakai statistik gabungan train+test
+```
+
+Contoh yang paling sering lolos, karena kodenya terlihat wajar:
+
+```python
+X = scaler.fit_transform(X)          # <- SELURUH data
+for tr, va in KFold(5).split(X):     # <- baru displit
+    model.fit(X[tr], y[tr])
+```
+
+Yang benar: `fit` hanya di dalam fold, pada bagian train saja.
+
 **KEMIRINGAN** — regresi `papan ~ CV`. Jauh dari 1 berarti perbaikan
 sebesar X di CV cuma berpindah sebagian ke papan. Biasanya tanda train dan
 test tidak sedistribusi.

@@ -256,7 +256,7 @@ di semua sel. Keduanya kuat di *riset & alur kerja*, kosong di
 | [borghei/Claude-Skills](https://github.com/borghei/Claude-Skills) | koleksi skill data-analytics termasuk `data-scientist` | pendukung Tingkat 1 |
 | [MLWave/Kaggle-Ensemble-Guide](https://github.com/MLWave/Kaggle-Ensemble-Guide) | kode ensembling klasik: rank averaging, voting, blending | bahan mentah `/final-slots` |
 | [kyaiooiayk/Kaggle-Competitions-Analysis](https://github.com/kyaiooiayk/Kaggle-Competitions-Analysis) | kompendium metode solusi terkenal lintas lomba | bahan Rantai A |
-| [LeakageDetector](https://arxiv.org/pdf/2503.14723) (plugin PyCharm, bukan skill Claude) | deteksi kebocoran **level KODE** di pipeline ML (mis. fit scaler sebelum split) | sebagian `/cv-lb-gap` — kebocoran kode adalah penyebab utama CV optimis |
+| ~~[LeakageDetector](https://arxiv.org/pdf/2503.14723)~~ **TIDAK PERLU** | plugin PyCharm untuk kebocoran level KODE. Celahnya nyata, tapi Anda tidak pakai PyCharm — dan `code-review` bawaan Claude Code mengerjakannya lebih baik karena memahami konteks. Daftar periksa 7 polanya sudah dimasukkan ke `/cv-lb-gap`. | — |
 
 **Dua yang layak dipasang meski bukan untuk lomba:**
 - [NVIDIA/SkillSpector](https://github.com/nvidia/skillspector) — pemindai keamanan skill sebelum dipasang (deteksi prompt injection, eksfiltrasi data, risiko rantai pasok). Relevan karena Anda memasang ~430 skill dari banyak sumber.
